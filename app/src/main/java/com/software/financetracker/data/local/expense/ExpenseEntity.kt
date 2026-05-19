@@ -23,5 +23,6 @@ data class ExpenseEntity(
     val categoryId: Long,
     val amountCop: Long,
     val description: String,
-    val date: String
+    val date: String,
+    val recurringExpenseId: Long? = null
 )

@@ -9,6 +9,7 @@ import com.software.financetracker.navigation.CategoryDetailRoute
 import com.software.financetracker.navigation.CategoryFormRoute
 import com.software.financetracker.navigation.ExpenseFormRoute
 import com.software.financetracker.navigation.MetricsRoute
+import com.software.financetracker.navigation.RecurringListRoute
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -28,6 +29,9 @@ fun HomeScreenRoot(navController: NavController) {
 
             is HomeEvent.NavigateToAddExpense ->
                 navController.navigate(ExpenseFormRoute(event.categoryId))
+
+            HomeEvent.NavigateToRecurringExpenses ->
+                navController.navigate(RecurringListRoute)
         }
     }
 

@@ -16,6 +16,7 @@ import com.software.financetracker.navigation.feature.categoryNavGraph
 import com.software.financetracker.navigation.feature.expenseNavGraph
 import com.software.financetracker.navigation.feature.homeNavGraph
 import com.software.financetracker.navigation.feature.metricsNavGraph
+import com.software.financetracker.navigation.feature.recurringNavGraph
 
 @Composable
 fun RootNavGraph() {
@@ -47,5 +48,6 @@ fun RootNavGraph() {
         categoryNavGraph(navController)
         expenseNavGraph(navController)
         metricsNavGraph(navController)
+        recurringNavGraph(navController)
     }
 }

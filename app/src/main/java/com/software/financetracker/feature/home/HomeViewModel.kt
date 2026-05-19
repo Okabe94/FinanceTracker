@@ -76,6 +76,8 @@ class HomeViewModel(
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToMetrics) }
             is HomeAction.OnAddExpenseClick ->
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToAddExpense(action.categoryId)) }
+            HomeAction.OnRecurringExpensesClick ->
+                viewModelScope.launch { _events.send(HomeEvent.NavigateToRecurringExpenses) }
         }
     }
 }

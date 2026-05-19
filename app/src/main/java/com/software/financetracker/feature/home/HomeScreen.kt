@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Receipt
+import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -198,6 +199,32 @@ fun HomeScreen(
                                 }
                             ) {
                                 Icon(Icons.Rounded.Receipt, contentDescription = "Nuevo gasto")
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.surface,
+                                shadowElevation = 2.dp,
+                                tonalElevation = 2.dp
+                            ) {
+                                Text(
+                                    text = "Gastos recurrentes",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                )
+                            }
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    isFabExpanded = false
+                                    onAction(HomeAction.OnRecurringExpensesClick)
+                                }
+                            ) {
+                                Icon(Icons.Rounded.Repeat, contentDescription = "Gastos recurrentes")
                             }
                         }
                     }

@@ -16,3 +16,12 @@ data class ExpenseFormRoute(val categoryId: Long, val expenseId: Long? = null)
 
 @Serializable
 object MetricsRoute
+
+@Serializable
+object RecurringListRoute
+
+@Serializable
+data class RecurringExpenseFormRoute(
+    val categoryId: Long = 0L,
+    val recurringExpenseId: Long? = null
+)
