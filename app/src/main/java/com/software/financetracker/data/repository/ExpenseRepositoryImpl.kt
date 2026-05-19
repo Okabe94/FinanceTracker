@@ -48,6 +48,13 @@ class ExpenseRepositoryImpl(
     override fun observeSpendByDayOfWeek(startDate: String, endDate: String): Flow<List<DayOfWeekTotal>> =
         dao.observeSpendByDayOfWeek(startDate, endDate)
 
+    override suspend fun getAllInRange(startDate: String, endDate: String): Result<List<TopExpenseRow>, DataError.Local> =
+        try {
+            Result.Success(dao.getAllInRange(startDate, endDate))
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
+        }
+
     override suspend fun getById(id: Long): Result<ExpenseEntity, DataError.Local> =
         try {
             val entity = dao.getById(id)

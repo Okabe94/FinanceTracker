@@ -2,6 +2,8 @@ package com.software.financetracker.feature.metrics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.software.financetracker.core.export.ExpenseExporter
+import com.software.financetracker.core.error.Result
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.data.local.category.CategoryEntity
 import com.software.financetracker.data.local.expense.CategoryMonthTotal
@@ -70,6 +72,18 @@ class MetricsViewModel(
                 _selectedRange.update { action.range }
             is MetricsAction.OnCategorySelected ->
                 _selectedCategoryId.update { action.categoryId }
+            MetricsAction.OnSaveClick -> buildCsv { _events.send(MetricsEvent.SaveReady(it)) }
+            MetricsAction.OnShareClick -> buildCsv { _events.send(MetricsEvent.ShareReady(it)) }
+        }
+    }
+
+    private fun buildCsv(onReady: suspend (String) -> Unit) {
+        viewModelScope.launch {
+            val (startDate, endDate) = dateRangeFor(_selectedRange.value)
+            val result = expenseRepository.getAllInRange(startDate, endDate)
+            if (result is Result.Success) {
+                onReady(ExpenseExporter.toCsv(ExpenseExporter.fromTopExpenseRows(result.data)))
+            }
         }
     }
 
@@ -207,14 +221,15 @@ class MetricsViewModel(
         )
     }
 
-    private fun dateRangeFor(range: TrendRange): Pair<String, String> =
-        if (range == TrendRange.YTD) {
+    private fun dateRangeFor(range: TrendRange): Pair<String, String> = when (range) {
+        TrendRange.YTD -> {
             val start = YearMonth.of(currentYm.year, 1).atDay(1).toString()
             val end = currentYm.atEndOfMonth().toString()
             start to end
-        } else {
-            DateUtil.rangeForMonthsBack(range.monthsBack)
         }
+        TrendRange.ALL -> "2000-01-01" to currentYm.atEndOfMonth().toString()
+        else -> DateUtil.rangeForMonthsBack(range.monthsBack)
+    }
 
     private fun formatDeltaLabel(delta: Float): String {
         val sign = if (delta >= 0f) "+" else ""

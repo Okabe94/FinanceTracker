@@ -18,6 +18,7 @@ interface ExpenseRepository {
     fun observeCategoryMonthlyBreakdown(startDate: String, endDate: String): Flow<List<CategoryMonthlyBreakdown>>
     fun observeTopExpenses(yearMonth: String, limit: Int): Flow<List<TopExpenseRow>>
     fun observeSpendByDayOfWeek(startDate: String, endDate: String): Flow<List<DayOfWeekTotal>>
+    suspend fun getAllInRange(startDate: String, endDate: String): Result<List<TopExpenseRow>, DataError.Local>
     suspend fun getById(id: Long): Result<ExpenseEntity, DataError.Local>
     suspend fun upsert(entity: ExpenseEntity): Result<Long, DataError.Local>
     suspend fun delete(entity: ExpenseEntity): EmptyResult<DataError.Local>

@@ -70,6 +70,16 @@ interface ExpenseDao {
     """)
     fun observeSpendByDayOfWeek(startDate: String, endDate: String): Flow<List<DayOfWeekTotal>>
 
+    @Query("""
+        SELECT e.id, e.categoryId, e.amountCop, e.description, e.date,
+               c.name AS categoryName, c.colorArgb
+        FROM expenses e
+        JOIN categories c ON e.categoryId = c.id
+        WHERE e.date >= :startDate AND e.date <= :endDate
+        ORDER BY e.date ASC
+    """)
+    suspend fun getAllInRange(startDate: String, endDate: String): List<TopExpenseRow>
+
     @Query("SELECT * FROM expenses WHERE id = :id")
     suspend fun getById(id: Long): ExpenseEntity?
 

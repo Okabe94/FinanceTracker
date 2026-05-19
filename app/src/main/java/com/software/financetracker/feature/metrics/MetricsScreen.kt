@@ -13,6 +13,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.FileDownload
+import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.TrendingDown
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Warning
@@ -55,6 +58,35 @@ fun MetricsScreen(
                 navigationIcon = {
                     IconButton(onClick = { onAction(MetricsAction.OnBackClick) }) {
                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    var showMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Rounded.FileDownload, contentDescription = "Exportar")
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Guardar en Descargas") },
+                                leadingIcon = { Icon(Icons.Rounded.Save, contentDescription = null) },
+                                onClick = {
+                                    showMenu = false
+                                    onAction(MetricsAction.OnSaveClick)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Compartir") },
+                                leadingIcon = { Icon(Icons.Rounded.Share, contentDescription = null) },
+                                onClick = {
+                                    showMenu = false
+                                    onAction(MetricsAction.OnShareClick)
+                                }
+                            )
+                        }
                     }
                 }
             )
