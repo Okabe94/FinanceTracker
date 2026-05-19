@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive icon foreground: 108×108dp canvas, safe zone = central 72dp circle.
+    All elements are within radius 36 from center (54,54).
+
+    Design: 3 white bars (rising left→right) + gold trend line connecting their tops.
+    Bars span x=[26,82], y=[34,76]. Safe-circle check: all corners ≤ 35.6dp from center.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Baseline -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#80FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M 26,76 L 82,76" />
+
+    <!-- Bar 1: short, x=[26,42], top y=64, rounded corners r=4 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 26,76 L 26,68 A 4,4,0,0,1,30,64 L 38,64 A 4,4,0,0,1,42,68 L 42,76 Z" />
+
+    <!-- Bar 2: medium, x=[46,62], top y=50, rounded corners r=4 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 46,76 L 46,54 A 4,4,0,0,1,50,50 L 58,50 A 4,4,0,0,1,62,54 L 62,76 Z" />
+
+    <!-- Bar 3: tall, x=[66,82], top y=34, rounded corners r=4 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 66,76 L 66,38 A 4,4,0,0,1,70,34 L 78,34 A 4,4,0,0,1,82,38 L 82,76 Z" />
+
+    <!-- Gold trend line connecting bar top-centers: (34,64)→(54,50)→(74,34) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFCBA258"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 34,64 L 54,50 L 74,34" />
+
+    <!-- Gold dot at trend endpoint — marks the latest data point -->
+    <path
+        android:fillColor="#FFCBA258"
+        android:pathData="M 69.5,34 A 4.5,4.5,0,1,0,78.5,34 A 4.5,4.5,0,1,0,69.5,34" />
+
+</vector>

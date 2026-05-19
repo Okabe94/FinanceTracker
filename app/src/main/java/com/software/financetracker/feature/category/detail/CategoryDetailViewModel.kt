@@ -1,0 +1,109 @@
+package com.software.financetracker.feature.category.detail
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.software.financetracker.core.error.Result
+import com.software.financetracker.core.error.onSuccess
+import com.software.financetracker.core.util.DateUtil
+import com.software.financetracker.domain.repository.CategoryRepository
+import com.software.financetracker.domain.repository.ExpenseRepository
+import com.software.financetracker.navigation.CategoryDetailRoute
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class CategoryDetailViewModel(
+    savedStateHandle: SavedStateHandle,
+    private val categoryRepository: CategoryRepository,
+    private val expenseRepository: ExpenseRepository
+) : ViewModel() {
+
+    private val route = savedStateHandle.toRoute<CategoryDetailRoute>()
+    private val categoryId = route.categoryId
+    private val _selectedMonth = MutableStateFlow(route.selectedMonth)
+
+    private val _events = Channel<CategoryDetailEvent>()
+    val events = _events.receiveAsFlow()
+
+    private val _showDeleteConfirmDialog = MutableStateFlow(false)
+
+    val state = combine(
+        _selectedMonth,
+        categoryRepository.observeById(categoryId),
+        expenseRepository.observeByCategory(categoryId),
+        _showDeleteConfirmDialog
+    ) { month, categoryResult, allExpenses, showDialog ->
+        val cat = (categoryResult as? Result.Success)?.data
+        val filtered = allExpenses.filter { DateUtil.expensesInMonth(it.date, month) }
+        val spent = filtered.sumOf { it.amountCop }
+        CategoryDetailState(
+            categoryId = categoryId,
+            categoryName = cat?.name ?: "",
+            categoryColorArgb = cat?.colorArgb ?: 0xFF33B679.toInt(),
+            categoryIconKey = cat?.iconKey ?: "more_horiz",
+            monthlyLimitCop = cat?.monthlyLimitCop,
+            selectedMonth = month,
+            displayMonth = DateUtil.formatMonth(month),
+            isCurrentMonth = month == DateUtil.currentYearMonth(),
+            amountSpent = spent,
+            expenses = filtered.map {
+                ExpenseUiModel(
+                    id = it.id,
+                    amountCop = it.amountCop,
+                    description = it.description,
+                    displayDate = DateUtil.toDisplayDate(it.date)
+                )
+            },
+            isLoading = false,
+            isOverLimit = cat?.monthlyLimitCop != null && spent > cat.monthlyLimitCop,
+            showDeleteConfirmDialog = showDialog
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), CategoryDetailState())
+
+    fun onAction(action: CategoryDetailAction) {
+        when (action) {
+            CategoryDetailAction.OnBackClick ->
+                viewModelScope.launch { _events.send(CategoryDetailEvent.NavigateBack) }
+            CategoryDetailAction.OnEditCategoryClick ->
+                viewModelScope.launch {
+                    _events.send(CategoryDetailEvent.NavigateToEditCategory(categoryId))
+                }
+            CategoryDetailAction.OnAddExpenseClick ->
+                viewModelScope.launch {
+                    _events.send(CategoryDetailEvent.NavigateToAddExpense(categoryId))
+                }
+            is CategoryDetailAction.OnExpenseClick ->
+                viewModelScope.launch {
+                    _events.send(
+                        CategoryDetailEvent.NavigateToEditExpense(categoryId, action.expenseId)
+                    )
+                }
+            CategoryDetailAction.OnDeleteCategoryClick ->
+                _showDeleteConfirmDialog.update { true }
+            CategoryDetailAction.OnDeleteConfirm ->
+                viewModelScope.launch {
+                    _showDeleteConfirmDialog.update { false }
+                    categoryRepository.getById(categoryId).onSuccess { entity ->
+                        categoryRepository.delete(entity).onSuccess {
+                            _events.send(CategoryDetailEvent.NavigateBack)
+                        }
+                    }
+                }
+            CategoryDetailAction.OnDeleteDismiss ->
+                _showDeleteConfirmDialog.update { false }
+            CategoryDetailAction.OnPreviousMonthClick ->
+                _selectedMonth.update { DateUtil.previousMonth(it) }
+            CategoryDetailAction.OnNextMonthClick ->
+                _selectedMonth.update { DateUtil.nextMonth(it) }
+            CategoryDetailAction.OnGoToCurrentMonthClick ->
+                _selectedMonth.update { DateUtil.currentYearMonth() }
+        }
+    }
+}
