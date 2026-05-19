@@ -22,6 +22,6 @@ val dataModule = module {
     single { get<FinanceDatabase>().expenseDao() }
     single { get<FinanceDatabase>().notificationStateDao() }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
-    single<ExpenseRepository> { ExpenseRepositoryImpl(get()) }
+    single<ExpenseRepository> { ExpenseRepositoryImpl(get(), androidContext()) }
     single { UserPreferencesRepository(androidContext()) }
 }

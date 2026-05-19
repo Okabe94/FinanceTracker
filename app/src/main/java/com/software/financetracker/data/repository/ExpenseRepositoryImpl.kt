@@ -1,5 +1,9 @@
 package com.software.financetracker.data.repository
 
+import android.content.Context
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.software.financetracker.core.error.DataError
 import com.software.financetracker.core.error.EmptyResult
 import com.software.financetracker.core.error.Result
@@ -10,11 +14,15 @@ import com.software.financetracker.data.local.expense.ExpenseDao
 import com.software.financetracker.data.local.expense.ExpenseEntity
 import com.software.financetracker.data.local.expense.MonthlyTotal
 import com.software.financetracker.data.local.expense.TopExpenseRow
+import com.software.financetracker.data.worker.WidgetRefreshWorker
 import com.software.financetracker.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import java.time.YearMonth
 
-class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
+class ExpenseRepositoryImpl(
+    private val dao: ExpenseDao,
+    private val context: Context
+) : ExpenseRepository {
 
     override fun observeByCategory(categoryId: Long): Flow<List<ExpenseEntity>> =
         dao.observeByCategory(categoryId)
@@ -50,12 +58,9 @@ class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
 
     override suspend fun upsert(entity: ExpenseEntity): Result<Long, DataError.Local> =
         try {
-            if (entity.id == 0L) {
-                Result.Success(dao.insert(entity))
-            } else {
-                dao.update(entity)
-                Result.Success(entity.id)
-            }
+            val id = if (entity.id == 0L) dao.insert(entity) else { dao.update(entity); entity.id }
+            enqueueWidgetRefresh()
+            Result.Success(id)
         } catch (e: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
@@ -63,8 +68,17 @@ class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
     override suspend fun delete(entity: ExpenseEntity): EmptyResult<DataError.Local> =
         try {
             dao.delete(entity)
+            enqueueWidgetRefresh()
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
+
+    private fun enqueueWidgetRefresh() {
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "widget_refresh",
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<WidgetRefreshWorker>().build()
+        )
+    }
 }
