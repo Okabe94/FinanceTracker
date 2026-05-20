@@ -8,6 +8,10 @@ import com.software.financetracker.data.local.category.CategoryDao
 import com.software.financetracker.data.local.category.CategoryEntity
 import com.software.financetracker.data.local.expense.ExpenseDao
 import com.software.financetracker.data.local.expense.ExpenseEntity
+import com.software.financetracker.data.local.investment.InvestmentDao
+import com.software.financetracker.data.local.investment.InvestmentEntryDao
+import com.software.financetracker.data.local.investment.InvestmentEntryEntity
+import com.software.financetracker.data.local.investment.InvestmentEntity
 import com.software.financetracker.data.local.notification.NotificationStateDao
 import com.software.financetracker.data.local.notification.NotificationStateEntity
 import com.software.financetracker.data.local.recurring.RecurringExpenseDao
@@ -18,9 +22,11 @@ import com.software.financetracker.data.local.recurring.RecurringExpenseEntity
         CategoryEntity::class,
         ExpenseEntity::class,
         NotificationStateEntity::class,
-        RecurringExpenseEntity::class
+        RecurringExpenseEntity::class,
+        InvestmentEntity::class,
+        InvestmentEntryEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -28,6 +34,8 @@ abstract class FinanceDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun notificationStateDao(): NotificationStateDao
     abstract fun recurringExpenseDao(): RecurringExpenseDao
+    abstract fun investmentDao(): InvestmentDao
+    abstract fun investmentEntryDao(): InvestmentEntryDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -62,6 +70,36 @@ abstract class FinanceDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_recurring_expenses_categoryId` ON `recurring_expenses`(`categoryId`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_recurring_expenses_nextDueDate` ON `recurring_expenses`(`nextDueDate`)")
                 db.execSQL("ALTER TABLE `expenses` ADD COLUMN `recurringExpenseId` INTEGER DEFAULT NULL")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `investments` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `name` TEXT NOT NULL,
+                        `currency` TEXT NOT NULL,
+                        `colorArgb` INTEGER NOT NULL,
+                        `iconKey` TEXT NOT NULL,
+                        `annualRatePercent` REAL,
+                        `maturityDate` TEXT,
+                        `createdDate` TEXT NOT NULL
+                    )"""
+                )
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `investment_entries` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `investmentId` INTEGER NOT NULL,
+                        `entryType` TEXT NOT NULL,
+                        `amountMinorUnits` INTEGER NOT NULL DEFAULT 0,
+                        `date` TEXT NOT NULL,
+                        `notes` TEXT NOT NULL DEFAULT '',
+                        FOREIGN KEY(`investmentId`) REFERENCES `investments`(`id`) ON DELETE CASCADE
+                    )"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_investment_entries_investmentId` ON `investment_entries`(`investmentId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_investment_entries_date` ON `investment_entries`(`date`)")
             }
         }
     }

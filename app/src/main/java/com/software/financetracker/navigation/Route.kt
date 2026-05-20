@@ -25,3 +25,18 @@ data class RecurringExpenseFormRoute(
     val categoryId: Long = 0L,
     val recurringExpenseId: Long? = null
 )
+
+@Serializable
+object InvestmentListRoute
+
+@Serializable
+data class InvestmentDetailRoute(val investmentId: Long)
+
+@Serializable
+data class InvestmentFormRoute(val investmentId: Long? = null)
+
+@Serializable
+data class InvestmentEntryFormRoute(
+    val investmentId: Long,
+    val entryId: Long? = null
+)

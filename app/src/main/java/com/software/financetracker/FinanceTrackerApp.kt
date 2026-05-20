@@ -12,6 +12,7 @@ import com.software.financetracker.feature.category.di.categoryModule
 import com.software.financetracker.feature.expense.di.expenseModule
 import com.software.financetracker.feature.home.di.homeModule
 import com.software.financetracker.feature.metrics.di.metricsModule
+import com.software.financetracker.feature.investment.di.investmentModule
 import com.software.financetracker.feature.recurring.di.recurringModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -27,7 +28,7 @@ class FinanceTrackerApp : Application() {
         startKoin {
             androidLogger()
             androidContext(this@FinanceTrackerApp)
-            modules(dataModule, homeModule, categoryModule, expenseModule, metricsModule, recurringModule)
+            modules(dataModule, homeModule, categoryModule, expenseModule, metricsModule, recurringModule, investmentModule)
         }
 
         val budgetCheckRequest = PeriodicWorkRequestBuilder<BudgetCheckWorker>(
