@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -78,6 +79,7 @@ fun RootNavGraph() {
             startDestination = HomeRoute,
             modifier = Modifier
                 .fillMaxSize()
+                .consumeWindowInsets(innerPadding)
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background),
             enterTransition = {

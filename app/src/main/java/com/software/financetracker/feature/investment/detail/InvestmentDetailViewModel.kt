@@ -170,7 +170,13 @@ fun computeMetrics(
 
     val today = LocalDate.now()
     val currentValue: Long = when {
-        latestSnapshot != null -> latestSnapshot.amountMinorUnits
+        latestSnapshot != null -> {
+            val withdrawalsAfterSnapshot = entriesSortedAsc
+                .filter { it.entryType == EntryType.WITHDRAWAL.storageKey }
+                .filter { it.date > latestSnapshot.date || (it.date == latestSnapshot.date && it.id > latestSnapshot.id) }
+                .sumOf { it.amountMinorUnits }
+            maxOf(0L, latestSnapshot.amountMinorUnits - withdrawalsAfterSnapshot)
+        }
         investment.annualRatePercent != null && totalInvested > 0L -> {
             val firstInjection = entriesSortedAsc
                 .filter { it.entryType == EntryType.CASH_INJECTION.storageKey }

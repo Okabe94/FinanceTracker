@@ -45,6 +45,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.core.presentation.CopVisualTransformation
+import com.software.financetracker.core.presentation.DecimalVisualTransformation
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.domain.model.investment.EntryType
 import com.software.financetracker.ui.theme.Shapes
@@ -114,6 +116,8 @@ fun InvestmentEntryFormScreen(
                         keyboardType = if (state.investmentCurrency == "COP") KeyboardType.Number
                         else KeyboardType.Decimal
                     ),
+                    visualTransformation = if (state.investmentCurrency == "COP")
+                        CopVisualTransformation() else DecimalVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -126,8 +130,7 @@ fun InvestmentEntryFormScreen(
                 label = { Text("Fecha") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onAction(InvestmentEntryFormAction.OnDateClick) },
-                enabled = false
+                    .clickable { onAction(InvestmentEntryFormAction.OnDateClick) }
             )
 
             OutlinedTextField(
