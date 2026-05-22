@@ -26,6 +26,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.software.financetracker.navigation.feature.categoryNavGraph
 import com.software.financetracker.navigation.feature.expenseNavGraph
@@ -35,8 +36,7 @@ import com.software.financetracker.navigation.feature.metricsNavGraph
 import com.software.financetracker.navigation.feature.recurringNavGraph
 
 @Composable
-fun RootNavGraph() {
-    val navController = rememberNavController()
+fun RootNavGraph(navController: NavHostController = rememberNavController()) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Static shortcut: long-press app icon → "Agregar gasto" -->
+    <shortcut
+        android:shortcutId="add_expense"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_add_expense_short"
+        android:shortcutLongLabel="@string/shortcut_add_expense_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="financetracker://add-expense" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <!--
+        App Action: "Hey Google, crea un [gasto] en Finance Tracker"
+        thing.name → categoryName query param
+    -->
+    <capability android:name="actions.intent.CREATE_THING">
+        <intent android:action="android.intent.action.VIEW">
+            <url-template
+                android:value="financetracker://add-expense?categoryName={thing.name}" />
+            <parameter
+                android:name="thing.name"
+                android:key="categoryName" />
+        </intent>
+    </capability>
+
+</shortcuts>

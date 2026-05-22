@@ -40,3 +40,9 @@ data class InvestmentEntryFormRoute(
     val investmentId: Long,
     val entryId: Long? = null
 )
+
+@Serializable
+data class AssistantExpenseRoute(
+    val categoryName: String = "",
+    val amountCop: Long = 0L
+)

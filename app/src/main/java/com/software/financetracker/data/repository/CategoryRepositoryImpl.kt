@@ -18,6 +18,8 @@ class CategoryRepositoryImpl(private val dao: CategoryDao) : CategoryRepository 
             if (entity != null) Result.Success(entity) else Result.Error(DataError.Local.NOT_FOUND)
         }
 
+    override suspend fun getAll(): List<CategoryEntity> = dao.getAll()
+
     override suspend fun getById(id: Long): Result<CategoryEntity, DataError.Local> =
         try {
             val entity = dao.getById(id)

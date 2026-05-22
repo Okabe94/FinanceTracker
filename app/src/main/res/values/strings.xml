@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">FinanceTracker</string>
+    <string name="shortcut_add_expense_short">Agregar gasto</string>
+    <string name="shortcut_add_expense_long">Agregar nuevo gasto</string>
 </resources>
