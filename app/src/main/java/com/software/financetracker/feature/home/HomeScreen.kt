@@ -25,9 +25,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Receipt
 import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,54 +65,11 @@ fun HomeScreen(
     onAction: (HomeAction) -> Unit
 ) {
     var isFabExpanded by remember { mutableStateOf(false) }
-    var showCategoryPicker by remember { mutableStateOf(false) }
     val fabRotation by animateFloatAsState(
         targetValue = if (isFabExpanded) 45f else 0f,
         animationSpec = tween(durationMillis = 300),
         label = "fabRotation"
     )
-
-    if (showCategoryPicker) {
-        ModalBottomSheet(onDismissRequest = { showCategoryPicker = false }) {
-            Text(
-                text = "Seleccionar categoría",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-            if (state.categories.isEmpty()) {
-                Text(
-                    text = "No hay categorías. Crea una categoría primero.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                )
-            } else {
-                LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
-                    items(state.categories) { category ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showCategoryPicker = false
-                                    onAction(HomeAction.OnAddExpenseClick(category.id))
-                                }
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Icon(
-                                imageVector = iconForKey(category.iconKey),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                                tint = Color(category.colorArgb)
-                            )
-                            Text(category.name, style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -187,7 +146,7 @@ fun HomeScreen(
                                 tonalElevation = 2.dp
                             ) {
                                 Text(
-                                    text = "Nuevo gasto",
+                                    text = "Gastos",
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
@@ -195,10 +154,10 @@ fun HomeScreen(
                             SmallFloatingActionButton(
                                 onClick = {
                                     isFabExpanded = false
-                                    showCategoryPicker = true
+                                    onAction(HomeAction.OnRecurringExpensesClick)
                                 }
                             ) {
-                                Icon(Icons.Rounded.Receipt, contentDescription = "Nuevo gasto")
+                                Icon(Icons.Rounded.Receipt, contentDescription = "Gastos")
                             }
                         }
 
@@ -213,7 +172,7 @@ fun HomeScreen(
                                 tonalElevation = 2.dp
                             ) {
                                 Text(
-                                    text = "Gastos recurrentes",
+                                    text = "Ingresos",
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
@@ -221,10 +180,36 @@ fun HomeScreen(
                             SmallFloatingActionButton(
                                 onClick = {
                                     isFabExpanded = false
-                                    onAction(HomeAction.OnRecurringExpensesClick)
+                                    onAction(HomeAction.OnViewIncomeClick)
                                 }
                             ) {
-                                Icon(Icons.Rounded.Repeat, contentDescription = "Gastos recurrentes")
+                                Icon(Icons.Rounded.AttachMoney, contentDescription = "Ingresos")
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.surface,
+                                shadowElevation = 2.dp,
+                                tonalElevation = 2.dp
+                            ) {
+                                Text(
+                                    text = "Metas de ahorro",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                )
+                            }
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    isFabExpanded = false
+                                    onAction(HomeAction.OnGoalsClick)
+                                }
+                            ) {
+                                Icon(Icons.Rounded.Savings, contentDescription = "Metas de ahorro")
                             }
                         }
                     }
@@ -305,7 +290,10 @@ fun HomeScreen(
                         SummaryCard(
                             totalSpent = state.totalSpent,
                             totalLimit = state.totalLimit,
-                            hasAnyLimit = state.hasAnyLimit
+                            hasAnyLimit = state.hasAnyLimit,
+                            totalIncomeCop = state.totalIncomeCop,
+                            netBalanceCop = state.netBalanceCop,
+                            hasIncomeData = state.hasIncomeData
                         )
                     }
                     items(state.categories, key = { it.id }) { category ->

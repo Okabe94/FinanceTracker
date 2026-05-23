@@ -4,6 +4,8 @@ sealed interface HomeEvent {
     data class NavigateToCategoryDetail(val categoryId: Long, val selectedMonth: String) : HomeEvent
     data object NavigateToAddCategory : HomeEvent
     data object NavigateToMetrics : HomeEvent
-    data class NavigateToAddExpense(val categoryId: Long) : HomeEvent
     data object NavigateToRecurringExpenses : HomeEvent
+    data object NavigateToAddIncome : HomeEvent
+    data object NavigateToIncomeList : HomeEvent
+    data object NavigateToGoals : HomeEvent
 }

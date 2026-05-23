@@ -22,6 +22,9 @@ fun SummaryCard(
     totalSpent: Long,
     totalLimit: Long,
     hasAnyLimit: Boolean,
+    totalIncomeCop: Long = 0L,
+    netBalanceCop: Long = 0L,
+    hasIncomeData: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
@@ -38,6 +41,21 @@ fun SummaryCard(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
+            if (hasIncomeData) {
+                Text(
+                    text = "Total ingresos: ${formatCop(totalIncomeCop)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                val balanceColor = if (netBalanceCop >= 0L) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.error
+                Text(
+                    text = "Balance neto: ${formatCop(netBalanceCop)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = balanceColor,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             if (hasAnyLimit && totalLimit > 0) {
                 val progress = (totalSpent.toFloat() / totalLimit).coerceIn(0f, 1f)
                 val isOver = totalSpent > totalLimit

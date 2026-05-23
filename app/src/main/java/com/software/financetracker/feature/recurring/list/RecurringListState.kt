@@ -4,6 +4,7 @@ import com.software.financetracker.domain.model.RecurrenceType
 
 data class RecurringListState(
     val templates: List<RecurringTemplateUi> = emptyList(),
+    val categories: List<CategoryPickerItem> = emptyList(),
     val isLoading: Boolean = true
 )
 
@@ -17,4 +18,11 @@ data class RecurringTemplateUi(
     val recurrenceType: RecurrenceType,
     val displayNextDueDate: String,
     val isActive: Boolean
+)
+
+data class CategoryPickerItem(
+    val id: Long,
+    val name: String,
+    val iconKey: String,
+    val colorArgb: Int
 )

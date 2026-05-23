@@ -71,12 +71,24 @@ class RecurringListViewModelTest {
     }
 
     @Test
-    fun `add click emits NavigateToAddForm`() = runTest {
+    fun `add template click emits NavigateToAddTemplate`() = runTest {
         val viewModel = buildViewModel()
 
         viewModel.events.test {
-            viewModel.onAction(RecurringListAction.OnAddClick)
-            assertThat(awaitItem()).isEqualTo(RecurringListEvent.NavigateToAddForm)
+            viewModel.onAction(RecurringListAction.OnAddTemplateClick)
+            assertThat(awaitItem()).isEqualTo(RecurringListEvent.NavigateToAddTemplate)
+        }
+    }
+
+    @Test
+    fun `add expense click emits NavigateToAddExpense with correct categoryId`() = runTest {
+        val viewModel = buildViewModel()
+
+        viewModel.events.test {
+            viewModel.onAction(RecurringListAction.OnAddExpenseClick(categoryId = 5L))
+            val event = awaitItem()
+            assertThat(event).isInstanceOf(RecurringListEvent.NavigateToAddExpense::class)
+            assertThat((event as RecurringListEvent.NavigateToAddExpense).categoryId).isEqualTo(5L)
         }
     }
 
@@ -106,6 +118,18 @@ class RecurringListViewModelTest {
             assertThat(template.categoryName).isEqualTo("Netflix")
             assertThat(template.amountCop).isEqualTo(49_900L)
             assertThat(template.isActive).isEqualTo(true)
+        }
+    }
+
+    @Test
+    fun `state exposes categories for picker`() = runTest {
+        categoryRepository.seed(sampleCategory)
+        val viewModel = buildViewModel()
+
+        viewModel.state.test {
+            val state = awaitItem()
+            assertThat(state.categories).hasSize(1)
+            assertThat(state.categories.first().name).isEqualTo("Netflix")
         }
     }
 }

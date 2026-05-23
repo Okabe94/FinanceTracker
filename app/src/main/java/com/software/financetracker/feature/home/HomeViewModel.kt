@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.domain.repository.CategoryRepository
 import com.software.financetracker.domain.repository.ExpenseRepository
+import com.software.financetracker.domain.repository.IncomeRepository
+import java.time.YearMonth
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +19,8 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val categoryRepository: CategoryRepository,
-    private val expenseRepository: ExpenseRepository
+    private val expenseRepository: ExpenseRepository,
+    private val incomeRepository: IncomeRepository
 ) : ViewModel() {
 
     private val _selectedMonth = MutableStateFlow(DateUtil.currentYearMonth())
@@ -25,10 +28,14 @@ class HomeViewModel(
     val events = _events.receiveAsFlow()
 
     val state = _selectedMonth.flatMapLatest { month ->
+        val monthStart = "$month-01"
+        val yearMonthObj = YearMonth.parse(month)
+        val monthEnd = "$month-${yearMonthObj.lengthOfMonth().toString().padStart(2, '0')}"
         combine(
             categoryRepository.observeAll(),
-            expenseRepository.observeMonthlyTotalsByCategory(month)
-        ) { categories, totals ->
+            expenseRepository.observeMonthlyTotalsByCategory(month),
+            incomeRepository.observeTotalInRange(monthStart, monthEnd)
+        ) { categories, totals, incomeTotal ->
             val totalsMap = totals.associate { it.categoryId to it.total }
             val uiModels = categories.map { cat ->
                 val spent = totalsMap[cat.id] ?: 0L
@@ -43,15 +50,20 @@ class HomeViewModel(
                 )
             }
             val limitedCats = uiModels.filter { it.monthlyLimit != null }
+            val totalSpent = uiModels.sumOf { it.amountSpent }
+            val totalIncome = incomeTotal ?: 0L
             HomeState(
                 selectedMonth = month,
                 displayMonth = DateUtil.formatMonth(month),
                 isCurrentMonth = month == DateUtil.currentYearMonth(),
                 categories = uiModels,
-                totalSpent = uiModels.sumOf { it.amountSpent },
+                totalSpent = totalSpent,
                 totalLimit = limitedCats.sumOf { it.monthlyLimit ?: 0L },
                 hasAnyLimit = limitedCats.isNotEmpty(),
-                isLoading = false
+                isLoading = false,
+                totalIncomeCop = totalIncome,
+                netBalanceCop = totalIncome - totalSpent,
+                hasIncomeData = totalIncome > 0L
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), HomeState())
@@ -74,10 +86,14 @@ class HomeViewModel(
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToAddCategory) }
             HomeAction.OnMetricsClick ->
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToMetrics) }
-            is HomeAction.OnAddExpenseClick ->
-                viewModelScope.launch { _events.send(HomeEvent.NavigateToAddExpense(action.categoryId)) }
             HomeAction.OnRecurringExpensesClick ->
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToRecurringExpenses) }
+            HomeAction.OnAddIncomeClick ->
+                viewModelScope.launch { _events.send(HomeEvent.NavigateToAddIncome) }
+            HomeAction.OnViewIncomeClick ->
+                viewModelScope.launch { _events.send(HomeEvent.NavigateToIncomeList) }
+            HomeAction.OnGoalsClick ->
+                viewModelScope.launch { _events.send(HomeEvent.NavigateToGoals) }
         }
     }
 }

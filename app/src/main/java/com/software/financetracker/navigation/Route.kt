@@ -46,3 +46,24 @@ data class AssistantExpenseRoute(
     val categoryName: String = "",
     val amountCop: Long = 0L
 )
+
+@Serializable
+data class IncomeFormRoute(val incomeId: Long? = null)
+
+@Serializable
+object IncomeListRoute
+
+@Serializable
+object RecurringIncomeListRoute
+
+@Serializable
+data class RecurringIncomeFormRoute(val recurringIncomeId: Long? = null)
+
+@Serializable
+object GoalListRoute
+
+@Serializable
+data class GoalDetailRoute(val goalId: Long)
+
+@Serializable
+data class GoalFormRoute(val goalId: Long? = null)

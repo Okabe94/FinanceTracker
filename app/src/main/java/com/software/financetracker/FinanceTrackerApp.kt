@@ -8,10 +8,13 @@ import com.software.financetracker.core.notification.NotificationHelper
 import com.software.financetracker.data.di.dataModule
 import com.software.financetracker.data.worker.BudgetCheckWorker
 import com.software.financetracker.data.worker.RecurringExpenseWorker
+import com.software.financetracker.data.worker.RecurringIncomeWorker
 import com.software.financetracker.feature.category.di.categoryModule
 import com.software.financetracker.feature.expense.di.expenseModule
 import com.software.financetracker.feature.home.di.homeModule
 import com.software.financetracker.feature.metrics.di.metricsModule
+import com.software.financetracker.feature.goal.di.goalModule
+import com.software.financetracker.feature.income.di.incomeModule
 import com.software.financetracker.feature.investment.di.investmentModule
 import com.software.financetracker.feature.recurring.di.recurringModule
 import org.koin.android.ext.koin.androidContext
@@ -28,7 +31,7 @@ class FinanceTrackerApp : Application() {
         startKoin {
             androidLogger()
             androidContext(this@FinanceTrackerApp)
-            modules(dataModule, homeModule, categoryModule, expenseModule, metricsModule, recurringModule, investmentModule)
+            modules(dataModule, homeModule, categoryModule, expenseModule, metricsModule, recurringModule, investmentModule, incomeModule, goalModule)
         }
 
         val budgetCheckRequest = PeriodicWorkRequestBuilder<BudgetCheckWorker>(
@@ -37,6 +40,11 @@ class FinanceTrackerApp : Application() {
         ).build()
 
         val recurringExpenseRequest = PeriodicWorkRequestBuilder<RecurringExpenseWorker>(
+            24, TimeUnit.HOURS,
+            1, TimeUnit.HOURS
+        ).build()
+
+        val recurringIncomeRequest = PeriodicWorkRequestBuilder<RecurringIncomeWorker>(
             24, TimeUnit.HOURS,
             1, TimeUnit.HOURS
         ).build()
@@ -51,6 +59,11 @@ class FinanceTrackerApp : Application() {
                 "recurring_expense_check",
                 ExistingPeriodicWorkPolicy.KEEP,
                 recurringExpenseRequest
+            )
+            enqueueUniquePeriodicWork(
+                "recurring_income_check",
+                ExistingPeriodicWorkPolicy.KEEP,
+                recurringIncomeRequest
             )
         }
     }

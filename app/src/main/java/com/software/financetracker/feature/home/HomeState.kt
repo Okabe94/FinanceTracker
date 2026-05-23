@@ -20,5 +20,8 @@ data class HomeState(
     val totalSpent: Long = 0L,
     val totalLimit: Long = 0L,
     val hasAnyLimit: Boolean = false,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val totalIncomeCop: Long = 0L,
+    val netBalanceCop: Long = 0L,
+    val hasIncomeData: Boolean = false
 )

@@ -30,7 +30,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.software.financetracker.navigation.feature.categoryNavGraph
 import com.software.financetracker.navigation.feature.expenseNavGraph
+import com.software.financetracker.navigation.feature.goalNavGraph
 import com.software.financetracker.navigation.feature.homeNavGraph
+import com.software.financetracker.navigation.feature.incomeNavGraph
 import com.software.financetracker.navigation.feature.investmentNavGraph
 import com.software.financetracker.navigation.feature.metricsNavGraph
 import com.software.financetracker.navigation.feature.recurringNavGraph
@@ -105,6 +107,8 @@ fun RootNavGraph(navController: NavHostController = rememberNavController()) {
             metricsNavGraph(navController)
             recurringNavGraph(navController)
             investmentNavGraph(navController)
+            incomeNavGraph(navController)
+            goalNavGraph(navController)
         }
     }
 }

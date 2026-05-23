@@ -14,6 +14,12 @@ import com.software.financetracker.data.local.investment.InvestmentDao
 import com.software.financetracker.data.local.investment.InvestmentEntryDao
 import com.software.financetracker.data.local.investment.InvestmentEntryEntity
 import com.software.financetracker.data.local.investment.InvestmentEntity
+import com.software.financetracker.data.local.goal.GoalDao
+import com.software.financetracker.data.local.goal.GoalEntity
+import com.software.financetracker.data.local.income.IncomeDao
+import com.software.financetracker.data.local.income.IncomeEntity
+import com.software.financetracker.data.local.income.RecurringIncomeDao
+import com.software.financetracker.data.local.income.RecurringIncomeEntity
 import com.software.financetracker.data.local.notification.NotificationStateDao
 import com.software.financetracker.data.local.notification.NotificationStateEntity
 import com.software.financetracker.data.local.recurring.RecurringExpenseDao
@@ -27,9 +33,12 @@ import com.software.financetracker.data.local.recurring.RecurringExpenseEntity
         RecurringExpenseEntity::class,
         InvestmentEntity::class,
         InvestmentEntryEntity::class,
-        ExchangeRateEntity::class
+        ExchangeRateEntity::class,
+        IncomeEntity::class,
+        GoalEntity::class,
+        RecurringIncomeEntity::class
     ],
-    version = 5,
+    version = 8,
     exportSchema = true
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -40,6 +49,9 @@ abstract class FinanceDatabase : RoomDatabase() {
     abstract fun investmentDao(): InvestmentDao
     abstract fun investmentEntryDao(): InvestmentEntryDao
     abstract fun exchangeRateDao(): ExchangeRateDao
+    abstract fun incomeDao(): IncomeDao
+    abstract fun recurringIncomeDao(): RecurringIncomeDao
+    abstract fun goalDao(): GoalDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -119,6 +131,56 @@ abstract class FinanceDatabase : RoomDatabase() {
                 )
                 db.execSQL("ALTER TABLE `investments` ADD COLUMN `targetValueMinorUnits` INTEGER")
                 db.execSQL("ALTER TABLE `investments` ADD COLUMN `targetDate` TEXT")
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `income` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `amountCop` INTEGER NOT NULL,
+                        `source` TEXT NOT NULL,
+                        `date` TEXT NOT NULL,
+                        `notes` TEXT NOT NULL DEFAULT ''
+                    )"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_income_date` ON `income`(`date`)")
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `goals` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `name` TEXT NOT NULL,
+                        `targetAmountCop` INTEGER NOT NULL,
+                        `currentAmountCop` INTEGER NOT NULL DEFAULT 0,
+                        `deadlineDate` TEXT NOT NULL,
+                        `colorArgb` INTEGER NOT NULL,
+                        `isAchieved` INTEGER NOT NULL DEFAULT 0
+                    )"""
+                )
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `recurring_income` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `amountCop` INTEGER NOT NULL,
+                        `source` TEXT NOT NULL,
+                        `notes` TEXT NOT NULL DEFAULT '',
+                        `recurrenceType` TEXT NOT NULL,
+                        `startDate` TEXT NOT NULL,
+                        `nextDueDate` TEXT NOT NULL,
+                        `isActive` INTEGER NOT NULL DEFAULT 1
+                    )"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_recurring_income_nextDueDate` ON `recurring_income`(`nextDueDate`)")
+                db.execSQL("ALTER TABLE `income` ADD COLUMN `recurringIncomeId` INTEGER DEFAULT NULL")
             }
         }
     }
