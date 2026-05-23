@@ -12,5 +12,7 @@ data class InvestmentEntity(
     val iconKey: String,
     val annualRatePercent: Double? = null,
     val maturityDate: String? = null,
-    val createdDate: String
+    val createdDate: String,
+    val targetValueMinorUnits: Long? = null,
+    val targetDate: String? = null
 )

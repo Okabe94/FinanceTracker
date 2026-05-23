@@ -55,4 +55,11 @@ object CurrencyHelper {
         "GBP" -> "£"
         else  -> "$"
     }
+
+    fun convertToCop(amountMinorUnits: Long, fromCurrency: String, rates: Map<String, Double>): Long? {
+        if (fromCurrency == "COP") return amountMinorUnits
+        val copPerUnit = rates[fromCurrency] ?: return null
+        val major = amountMinorUnits.toDouble() / minorUnitsPerMajor(fromCurrency)
+        return (major * copPerUnit).toLong()
+    }
 }

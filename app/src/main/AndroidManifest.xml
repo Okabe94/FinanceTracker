@@ -4,6 +4,7 @@
 
     <!-- Required on API 33+ (TIRAMISU). Requested at runtime in MainActivity. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".FinanceTrackerApp"

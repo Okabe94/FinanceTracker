@@ -16,4 +16,9 @@ sealed interface InvestmentFormAction {
     data object OnDeleteClick : InvestmentFormAction
     data object OnDeleteConfirm : InvestmentFormAction
     data object OnDeleteDismiss : InvestmentFormAction
+    data object OnTargetEnabledToggled : InvestmentFormAction
+    data class OnTargetValueChanged(val value: String) : InvestmentFormAction
+    data object OnTargetDateClick : InvestmentFormAction
+    data class OnTargetDateSelected(val dateMillis: Long) : InvestmentFormAction
+    data object OnTargetDatePickerDismiss : InvestmentFormAction
 }

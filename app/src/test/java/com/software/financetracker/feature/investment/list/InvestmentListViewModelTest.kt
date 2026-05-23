@@ -6,6 +6,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import com.software.financetracker.data.local.investment.InvestmentEntity
+import com.software.financetracker.fake.FakeExchangeRateRepository
 import com.software.financetracker.fake.FakeInvestmentEntryRepository
 import com.software.financetracker.fake.FakeInvestmentRepository
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ class InvestmentListViewModelTest {
 
     private lateinit var investmentRepository: FakeInvestmentRepository
     private lateinit var entryRepository: FakeInvestmentEntryRepository
+    private lateinit var exchangeRateRepository: FakeExchangeRateRepository
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @BeforeEach
@@ -30,6 +32,7 @@ class InvestmentListViewModelTest {
         Dispatchers.setMain(testDispatcher)
         investmentRepository = FakeInvestmentRepository()
         entryRepository = FakeInvestmentEntryRepository()
+        exchangeRateRepository = FakeExchangeRateRepository()
     }
 
     @AfterEach
@@ -38,7 +41,7 @@ class InvestmentListViewModelTest {
     }
 
     private fun buildViewModel() =
-        InvestmentListViewModel(investmentRepository, entryRepository)
+        InvestmentListViewModel(investmentRepository, entryRepository, exchangeRateRepository)
 
     @Test
     fun `add click emits NavigateToAddForm`() = runTest {

@@ -29,5 +29,9 @@ data class InvestmentListState(
     val availableCurrencies: List<String> = emptyList(),
     val searchQuery: String = "",
     val activeCurrencyFilter: String? = null,
-    val totalCount: Int = 0
+    val totalCount: Int = 0,
+    val rates: Map<String, Double> = emptyMap(),
+    val ratesUpdatedAt: String? = null,
+    val isRefreshingRates: Boolean = false,
+    val showRatesBottomSheet: Boolean = false
 )

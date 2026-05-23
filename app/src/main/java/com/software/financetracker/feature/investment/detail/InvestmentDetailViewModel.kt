@@ -187,6 +187,11 @@ class InvestmentDetailViewModel(
         val returnSign = if (metrics.returnMinorUnits >= 0) "+" else ""
         val returnPercentStr = metrics.returnPercent?.let { String.format("%.1f%%", it) } ?: "–"
 
+        val targetProgress = investment.targetValueMinorUnits?.let { target ->
+            if (target > 0L) (metrics.currentValueMinorUnits.toFloat() / target.toFloat()).coerceIn(0f, 1f)
+            else null
+        }
+
         return InvestmentDetailState(
             isLoading = false,
             investmentId = investment.id,
@@ -204,7 +209,12 @@ class InvestmentDetailViewModel(
             dividendsFormatted = CurrencyHelper.format(metrics.dividendsTotalMinorUnits, currency),
             valueSnapshots = snapshots,
             entries = entryUiModels,
-            investmentEntries = entries
+            investmentEntries = entries,
+            targetValueMinorUnits = investment.targetValueMinorUnits,
+            targetValueFormatted = investment.targetValueMinorUnits
+                ?.let { CurrencyHelper.format(it, currency) },
+            targetDateDisplay = investment.targetDate?.let { DateUtil.toDisplayDate(it) },
+            targetProgress = targetProgress
         )
     }
 

@@ -8,6 +8,8 @@ import com.software.financetracker.data.local.category.CategoryDao
 import com.software.financetracker.data.local.category.CategoryEntity
 import com.software.financetracker.data.local.expense.ExpenseDao
 import com.software.financetracker.data.local.expense.ExpenseEntity
+import com.software.financetracker.data.local.investment.ExchangeRateDao
+import com.software.financetracker.data.local.investment.ExchangeRateEntity
 import com.software.financetracker.data.local.investment.InvestmentDao
 import com.software.financetracker.data.local.investment.InvestmentEntryDao
 import com.software.financetracker.data.local.investment.InvestmentEntryEntity
@@ -24,9 +26,10 @@ import com.software.financetracker.data.local.recurring.RecurringExpenseEntity
         NotificationStateEntity::class,
         RecurringExpenseEntity::class,
         InvestmentEntity::class,
-        InvestmentEntryEntity::class
+        InvestmentEntryEntity::class,
+        ExchangeRateEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -36,6 +39,7 @@ abstract class FinanceDatabase : RoomDatabase() {
     abstract fun recurringExpenseDao(): RecurringExpenseDao
     abstract fun investmentDao(): InvestmentDao
     abstract fun investmentEntryDao(): InvestmentEntryDao
+    abstract fun exchangeRateDao(): ExchangeRateDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -100,6 +104,21 @@ abstract class FinanceDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_investment_entries_investmentId` ON `investment_entries`(`investmentId`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_investment_entries_date` ON `investment_entries`(`date`)")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `exchange_rates` (
+                        `fromCurrency` TEXT NOT NULL PRIMARY KEY,
+                        `toCurrency` TEXT NOT NULL,
+                        `rate` REAL NOT NULL,
+                        `updatedDate` TEXT NOT NULL
+                    )"""
+                )
+                db.execSQL("ALTER TABLE `investments` ADD COLUMN `targetValueMinorUnits` INTEGER")
+                db.execSQL("ALTER TABLE `investments` ADD COLUMN `targetDate` TEXT")
             }
         }
     }

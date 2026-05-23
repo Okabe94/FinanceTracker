@@ -17,5 +17,11 @@ data class InvestmentFormState(
     val maturityDateDisplay: String? = null,
     val showMaturityDatePicker: Boolean = false,
     val isSaving: Boolean = false,
-    val showDeleteDialog: Boolean = false
+    val showDeleteDialog: Boolean = false,
+    val targetEnabled: Boolean = false,
+    val targetValueInput: String = "",
+    val targetValueError: UiText? = null,
+    val targetDateStorage: String? = null,
+    val targetDateDisplay: String? = null,
+    val showTargetDatePicker: Boolean = false
 )

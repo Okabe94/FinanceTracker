@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -33,12 +34,16 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +65,14 @@ fun InvestmentListScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Inversiones") })
+            TopAppBar(
+                title = { Text("Inversiones") },
+                actions = {
+                    IconButton(onClick = { onAction(InvestmentListAction.OnRatesBottomSheetToggled) }) {
+                        Icon(Icons.Rounded.Tune, contentDescription = "Tasas de cambio")
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -72,6 +84,16 @@ fun InvestmentListScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
+        if (state.showRatesBottomSheet) {
+            ExchangeRatesBottomSheet(
+                rates = state.rates,
+                ratesUpdatedAt = state.ratesUpdatedAt,
+                isRefreshing = state.isRefreshingRates,
+                onDismiss = { onAction(InvestmentListAction.OnRatesBottomSheetToggled) },
+                onRefresh = { onAction(InvestmentListAction.RefreshRates) }
+            )
+        }
+
         when {
             state.isLoading -> {
                 Box(
@@ -233,6 +255,69 @@ private fun SearchAndFilterRow(
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExchangeRatesBottomSheet(
+    rates: Map<String, Double>,
+    ratesUpdatedAt: String?,
+    isRefreshing: Boolean,
+    onDismiss: () -> Unit,
+    onRefresh: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Tasas de cambio", style = MaterialTheme.typography.titleMedium)
+                if (isRefreshing) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    TextButton(onClick = onRefresh) { Text("Actualizar") }
+                }
+            }
+            val displayPairs = listOf("USD", "EUR", "GBP")
+            displayPairs.forEach { currency ->
+                val rate = rates[currency]
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "1 $currency",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        if (rate != null) "COP ${String.format("%,.0f", rate)}" else "–",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                    )
+                }
+            }
+            ratesUpdatedAt?.let {
+                Text(
+                    "Actualizada: $it",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } ?: Text(
+                "Sin datos. Toca Actualizar para obtener tasas.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

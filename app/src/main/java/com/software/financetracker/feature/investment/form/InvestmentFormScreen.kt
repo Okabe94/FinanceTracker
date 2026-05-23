@@ -273,6 +273,50 @@ fun InvestmentFormScreen(
                 }
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Meta de valor", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = state.targetEnabled,
+                    onCheckedChange = { onAction(InvestmentFormAction.OnTargetEnabledToggled) }
+                )
+            }
+
+            AnimatedVisibility(
+                visible = state.targetEnabled,
+                enter = expandVertically(animationSpec = tween(250), expandFrom = Alignment.Top) +
+                    fadeIn(animationSpec = tween(200)),
+                exit = shrinkVertically(animationSpec = tween(200), shrinkTowards = Alignment.Top) +
+                    fadeOut(animationSpec = tween(150))
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = state.targetValueInput,
+                        onValueChange = { onAction(InvestmentFormAction.OnTargetValueChanged(it)) },
+                        label = { Text("Valor objetivo") },
+                        isError = state.targetValueError != null,
+                        supportingText = { state.targetValueError?.let { Text(it.asString()) } },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        prefix = { Text(CurrencyHelper.currencySymbol(state.selectedCurrency)) }
+                    )
+                    OutlinedTextField(
+                        value = state.targetDateDisplay ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Fecha objetivo (opcional)") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onAction(InvestmentFormAction.OnTargetDateClick) },
+                        enabled = false
+                    )
+                }
+            }
+
             Spacer(Modifier.height(8.dp))
 
             Button(
@@ -309,6 +353,27 @@ fun InvestmentFormScreen(
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentFormAction.OnMaturityDatePickerDismiss) }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (state.showTargetDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { onAction(InvestmentFormAction.OnTargetDatePickerDismiss) },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        onAction(InvestmentFormAction.OnTargetDateSelected(it))
+                    }
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { onAction(InvestmentFormAction.OnTargetDatePickerDismiss) }) {
                     Text("Cancelar")
                 }
             }

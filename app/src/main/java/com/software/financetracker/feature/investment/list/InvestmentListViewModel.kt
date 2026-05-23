@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.domain.model.investment.InvestmentMetrics
+import com.software.financetracker.domain.repository.ExchangeRateRepository
 import com.software.financetracker.domain.repository.InvestmentEntryRepository
 import com.software.financetracker.domain.repository.InvestmentRepository
 import com.software.financetracker.feature.investment.detail.computeMetrics
@@ -29,7 +30,8 @@ private data class InvestmentWithMetrics(
 
 class InvestmentListViewModel(
     private val investmentRepository: InvestmentRepository,
-    private val entryRepository: InvestmentEntryRepository
+    private val entryRepository: InvestmentEntryRepository,
+    private val exchangeRateRepository: ExchangeRateRepository
 ) : ViewModel() {
 
     private val _events = Channel<InvestmentListEvent>()
@@ -37,6 +39,14 @@ class InvestmentListViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     private val _currencyFilter = MutableStateFlow<String?>(null)
+    private val _isRefreshingRates = MutableStateFlow(false)
+    private val _showRatesBottomSheet = MutableStateFlow(false)
+
+    init {
+        viewModelScope.launch {
+            try { exchangeRateRepository.refresh() } catch (_: Exception) {}
+        }
+    }
 
     private val _rawItems: Flow<List<InvestmentWithMetrics>> =
         investmentRepository.observeAll().flatMapLatest { investments ->
@@ -73,13 +83,21 @@ class InvestmentListViewModel(
     val state = combine(
         _rawItems,
         _searchQuery,
-        _currencyFilter
-    ) { rawItems, searchQuery, currencyFilter ->
+        _currencyFilter,
+        exchangeRateRepository.getAll()
+    ) { rawItems, searchQuery, currencyFilter, rateEntities ->
+        val rates = rateEntities.associate { it.fromCurrency to it.rate }
+        val ratesUpdatedAt = rateEntities.maxByOrNull { it.updatedDate }?.updatedDate
+
         val allCop = rawItems.all { it.currency == "COP" }
-        val copItems = rawItems.filter { it.currency == "COP" }
-        val portfolioSummary = if (copItems.isNotEmpty()) {
-            val totalValue = copItems.sumOf { it.metrics.currentValueMinorUnits }
-            val totalInvested = copItems.sumOf { it.metrics.totalInvestedMinorUnits }
+        val itemsWithCopValue = rawItems.mapNotNull { item ->
+            val copValue = CurrencyHelper.convertToCop(item.metrics.currentValueMinorUnits, item.currency, rates)
+            val copInvested = CurrencyHelper.convertToCop(item.metrics.totalInvestedMinorUnits, item.currency, rates)
+            if (copValue != null && copInvested != null) Triple(item, copValue, copInvested) else null
+        }
+        val portfolioSummary = if (itemsWithCopValue.isNotEmpty()) {
+            val totalValue = itemsWithCopValue.sumOf { it.second }
+            val totalInvested = itemsWithCopValue.sumOf { it.third }
             val returnAmount = totalValue - totalInvested
             val returnPercent = if (totalInvested > 0L)
                 (returnAmount.toFloat() / totalInvested.toFloat()) * 100f else null
@@ -114,8 +132,14 @@ class InvestmentListViewModel(
             availableCurrencies = availableCurrencies,
             searchQuery = searchQuery,
             activeCurrencyFilter = currencyFilter,
-            totalCount = rawItems.size
+            totalCount = rawItems.size,
+            rates = rates,
+            ratesUpdatedAt = ratesUpdatedAt
         )
+    }.combine(_isRefreshingRates) { s, isRefreshing ->
+        s.copy(isRefreshingRates = isRefreshing)
+    }.combine(_showRatesBottomSheet) { s, show ->
+        s.copy(showRatesBottomSheet = show)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000L),
@@ -134,6 +158,15 @@ class InvestmentListViewModel(
                 _searchQuery.update { action.query }
             is InvestmentListAction.OnCurrencyFilterChanged ->
                 _currencyFilter.update { action.currency }
+            InvestmentListAction.RefreshRates -> {
+                viewModelScope.launch {
+                    _isRefreshingRates.update { true }
+                    try { exchangeRateRepository.refresh() } catch (_: Exception) {}
+                    _isRefreshingRates.update { false }
+                }
+            }
+            InvestmentListAction.OnRatesBottomSheetToggled ->
+                _showRatesBottomSheet.update { !it }
         }
     }
 }

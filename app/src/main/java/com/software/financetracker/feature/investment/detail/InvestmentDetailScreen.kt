@@ -32,6 +32,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -231,6 +232,17 @@ fun InvestmentDetailScreen(
                             }
                         }
                     }
+                }
+            }
+
+            if (state.targetValueMinorUnits != null && state.targetProgress != null) {
+                item {
+                    GoalProgressCard(
+                        currentValueFormatted = state.currentValueFormatted,
+                        targetValueFormatted = state.targetValueFormatted ?: "",
+                        targetDateDisplay = state.targetDateDisplay,
+                        progress = state.targetProgress
+                    )
                 }
             }
 
@@ -508,6 +520,48 @@ private fun EntryRow(entry: EntryUiModel, onClick: () -> Unit) {
                         maxLines = 2
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GoalProgressCard(
+    currentValueFormatted: String,
+    targetValueFormatted: String,
+    targetDateDisplay: String?,
+    progress: Float
+) {
+    val isReached = progress >= 1f
+    val progressColor = if (isReached) Color(0xFF33B679) else MaterialTheme.colorScheme.primary
+    ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = Shapes.medium) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text("META", style = MaterialTheme.typography.labelLarge)
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = progressColor,
+                trackColor = progressColor.copy(alpha = 0.2f)
+            )
+            if (isReached) {
+                Text(
+                    "Meta alcanzada ✓",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF33B679),
+                    fontWeight = FontWeight.SemiBold
+                )
+            } else {
+                MetricRow("Actual", currentValueFormatted)
+                MetricRow("Meta", targetValueFormatted)
+                targetDateDisplay?.let { MetricRow("Fecha objetivo", it) }
+                Text(
+                    "${String.format("%.0f%%", progress * 100f)} alcanzado",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

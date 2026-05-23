@@ -34,5 +34,9 @@ data class InvestmentDetailState(
     val showDeleteInvestmentDialog: Boolean = false,
     val benchmarkRatePercent: Double? = null,
     val showBenchmarkPicker: Boolean = false,
-    val benchmarkChartData: List<Float> = emptyList()
+    val benchmarkChartData: List<Float> = emptyList(),
+    val targetValueMinorUnits: Long? = null,
+    val targetValueFormatted: String? = null,
+    val targetDateDisplay: String? = null,
+    val targetProgress: Float? = null
 )

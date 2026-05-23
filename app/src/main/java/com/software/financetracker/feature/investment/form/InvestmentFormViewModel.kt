@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.software.financetracker.core.error.Result
 import com.software.financetracker.core.presentation.UiText
+import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.data.local.investment.InvestmentEntity
 import com.software.financetracker.domain.repository.InvestmentRepository
@@ -48,7 +49,12 @@ class InvestmentFormViewModel(
                             hasFixedRoi = inv.annualRatePercent != null,
                             annualRateInput = inv.annualRatePercent?.toString() ?: "",
                             maturityDateStorage = inv.maturityDate,
-                            maturityDateDisplay = inv.maturityDate?.let { d -> DateUtil.toDisplayDate(d) }
+                            maturityDateDisplay = inv.maturityDate?.let { d -> DateUtil.toDisplayDate(d) },
+                            targetEnabled = inv.targetValueMinorUnits != null,
+                            targetValueInput = inv.targetValueMinorUnits
+                                ?.let { v -> CurrencyHelper.toInputString(v, inv.currency) } ?: "",
+                            targetDateStorage = inv.targetDate,
+                            targetDateDisplay = inv.targetDate?.let { d -> DateUtil.toDisplayDate(d) }
                         )
                     }
                 }
@@ -97,6 +103,26 @@ class InvestmentFormViewModel(
             InvestmentFormAction.OnDeleteConfirm -> delete()
             InvestmentFormAction.OnDeleteDismiss ->
                 _state.update { it.copy(showDeleteDialog = false) }
+            InvestmentFormAction.OnTargetEnabledToggled ->
+                _state.update { it.copy(targetEnabled = !it.targetEnabled, targetValueError = null) }
+            is InvestmentFormAction.OnTargetValueChanged ->
+                _state.update { it.copy(targetValueInput = action.value, targetValueError = null) }
+            InvestmentFormAction.OnTargetDateClick ->
+                _state.update { it.copy(showTargetDatePicker = true) }
+            is InvestmentFormAction.OnTargetDateSelected -> {
+                val date = Instant.ofEpochMilli(action.dateMillis)
+                    .atZone(ZoneOffset.UTC).toLocalDate()
+                val storage = date.toString()
+                _state.update {
+                    it.copy(
+                        targetDateStorage = storage,
+                        targetDateDisplay = DateUtil.toDisplayDate(storage),
+                        showTargetDatePicker = false
+                    )
+                }
+            }
+            InvestmentFormAction.OnTargetDatePickerDismiss ->
+                _state.update { it.copy(showTargetDatePicker = false) }
         }
     }
 
@@ -115,6 +141,15 @@ class InvestmentFormViewModel(
             r
         } else null
 
+        val targetValue: Long? = if (s.targetEnabled && s.targetValueInput.isNotBlank()) {
+            val parsed = CurrencyHelper.parseInput(s.targetValueInput, s.selectedCurrency)
+            if (parsed == null || parsed <= 0L) {
+                _state.update { it.copy(targetValueError = UiText.DynamicString("Ingresa un valor válido")) }
+                return
+            }
+            parsed
+        } else null
+
         _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
             val entity = InvestmentEntity(
@@ -125,7 +160,9 @@ class InvestmentFormViewModel(
                 iconKey = s.selectedIconKey,
                 annualRatePercent = rate,
                 maturityDate = if (s.hasFixedRoi) s.maturityDateStorage else null,
-                createdDate = DateUtil.today()
+                createdDate = DateUtil.today(),
+                targetValueMinorUnits = targetValue,
+                targetDate = if (s.targetEnabled) s.targetDateStorage else null
             )
             when (investmentRepository.upsert(entity)) {
                 is Result.Success -> _events.send(InvestmentFormEvent.NavigateBack)

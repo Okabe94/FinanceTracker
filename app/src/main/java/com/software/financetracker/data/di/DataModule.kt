@@ -5,10 +5,13 @@ import com.software.financetracker.core.preferences.UserPreferencesRepository
 import com.software.financetracker.data.local.FinanceDatabase
 import com.software.financetracker.data.repository.CategoryRepositoryImpl
 import com.software.financetracker.data.repository.ExpenseRepositoryImpl
+import com.software.financetracker.data.remote.ExchangeRateRemoteDataSource
+import com.software.financetracker.data.repository.ExchangeRateRepositoryImpl
 import com.software.financetracker.data.repository.InvestmentEntryRepositoryImpl
 import com.software.financetracker.data.repository.InvestmentRepositoryImpl
 import com.software.financetracker.data.repository.RecurringExpenseRepositoryImpl
 import com.software.financetracker.domain.repository.CategoryRepository
+import com.software.financetracker.domain.repository.ExchangeRateRepository
 import com.software.financetracker.domain.repository.ExpenseRepository
 import com.software.financetracker.domain.repository.InvestmentEntryRepository
 import com.software.financetracker.domain.repository.InvestmentRepository
@@ -25,7 +28,8 @@ val dataModule = module {
         ).addMigrations(
             FinanceDatabase.MIGRATION_1_2,
             FinanceDatabase.MIGRATION_2_3,
-            FinanceDatabase.MIGRATION_3_4
+            FinanceDatabase.MIGRATION_3_4,
+            FinanceDatabase.MIGRATION_4_5
         ).build()
     }
     single { get<FinanceDatabase>().categoryDao() }
@@ -34,6 +38,9 @@ val dataModule = module {
     single { get<FinanceDatabase>().recurringExpenseDao() }
     single { get<FinanceDatabase>().investmentDao() }
     single { get<FinanceDatabase>().investmentEntryDao() }
+    single { get<FinanceDatabase>().exchangeRateDao() }
+    single { ExchangeRateRemoteDataSource() }
+    single<ExchangeRateRepository> { ExchangeRateRepositoryImpl(get(), get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), androidContext()) }
     single<RecurringExpenseRepository> { RecurringExpenseRepositoryImpl(get()) }
