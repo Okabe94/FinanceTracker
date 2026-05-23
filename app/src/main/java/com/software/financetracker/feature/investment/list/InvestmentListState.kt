@@ -1,5 +1,7 @@
 package com.software.financetracker.feature.investment.list
 
+import com.software.financetracker.ui.components.DonutSlice
+
 data class InvestmentCardUiModel(
     val id: Long,
     val name: String,
@@ -22,5 +24,10 @@ data class PortfolioSummary(
 data class InvestmentListState(
     val isLoading: Boolean = true,
     val investments: List<InvestmentCardUiModel> = emptyList(),
-    val portfolioSummary: PortfolioSummary? = null
+    val portfolioSummary: PortfolioSummary? = null,
+    val allocationSlices: List<DonutSlice> = emptyList(),
+    val availableCurrencies: List<String> = emptyList(),
+    val searchQuery: String = "",
+    val activeCurrencyFilter: String? = null,
+    val totalCount: Int = 0
 )

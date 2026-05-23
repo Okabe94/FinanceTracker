@@ -2,6 +2,7 @@ package com.software.financetracker.feature.investment.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -26,10 +29,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,6 +47,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.software.financetracker.core.util.CurrencyHelper
+import com.software.financetracker.ui.components.DonutChart
+import com.software.financetracker.ui.components.DonutLegend
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
 
@@ -72,7 +79,7 @@ fun InvestmentListScreen(
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator() }
             }
-            state.investments.isEmpty() -> {
+            state.totalCount == 0 -> {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
                     contentAlignment = Alignment.Center
@@ -111,18 +118,119 @@ fun InvestmentListScreen(
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // 1. Portfolio summary
                     state.portfolioSummary?.let { summary ->
                         item { PortfolioSummaryCard(summary = summary) }
                     }
-                    items(state.investments, key = { it.id }) { card ->
-                        InvestmentCard(
-                            card = card,
-                            onClick = { onAction(InvestmentListAction.OnCardClick(card.id)) }
+
+                    // 2. Allocation donut (visible when ≥2 investments have value)
+                    if (state.allocationSlices.size >= 2) {
+                        item {
+                            ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = Shapes.medium) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text(
+                                        "Distribución",
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                    DonutChart(
+                                        slices = state.allocationSlices,
+                                        modifier = Modifier.fillMaxWidth().height(200.dp)
+                                    )
+                                    DonutLegend(
+                                        slices = state.allocationSlices,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. Search and currency filters
+                    item {
+                        SearchAndFilterRow(
+                            searchQuery = state.searchQuery,
+                            availableCurrencies = state.availableCurrencies,
+                            activeCurrencyFilter = state.activeCurrencyFilter,
+                            onAction = onAction
                         )
                     }
+
+                    // 4. Investment cards (or empty-search state)
+                    if (state.investments.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Search,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(40.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        "Sin resultados",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        items(state.investments, key = { it.id }) { card ->
+                            InvestmentCard(
+                                card = card,
+                                onClick = { onAction(InvestmentListAction.OnCardClick(card.id)) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchAndFilterRow(
+    searchQuery: String,
+    availableCurrencies: List<String>,
+    activeCurrencyFilter: String?,
+    onAction: (InvestmentListAction) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { onAction(InvestmentListAction.OnSearchQueryChanged(it)) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Buscar inversión...") },
+            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+            singleLine = true,
+            shape = Shapes.medium
+        )
+        if (availableCurrencies.size > 1) {
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                availableCurrencies.forEach { currency ->
+                    FilterChip(
+                        selected = activeCurrencyFilter == currency,
+                        onClick = {
+                            val newFilter = if (activeCurrencyFilter == currency) null else currency
+                            onAction(InvestmentListAction.OnCurrencyFilterChanged(newFilter))
+                        },
+                        label = { Text(currency) }
+                    )
                 }
             }
         }

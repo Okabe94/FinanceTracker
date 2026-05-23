@@ -35,6 +35,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -61,16 +62,28 @@ import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.dashed
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
+
+private val benchmarkPresets = listOf(
+    "Sin comparación" to null,
+    "CDT 8%" to 8.0,
+    "Inflación 10%" to 10.0,
+    "CDT 12%" to 12.0,
+    "Personalizado" to -1.0
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +159,7 @@ fun InvestmentDetailScreen(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -225,12 +238,30 @@ fun InvestmentDetailScreen(
                 item {
                     ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = Shapes.medium) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Historial de valor", style = MaterialTheme.typography.labelLarge)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Historial de valor", style = MaterialTheme.typography.labelLarge)
+                                BenchmarkPickerButton(
+                                    currentRate = state.benchmarkRatePercent,
+                                    onAction = onAction
+                                )
+                            }
                             Spacer(Modifier.height(12.dp))
                             ValueLineChart(
                                 snapshots = state.valueSnapshots,
-                                currency = state.currency
+                                currency = state.currency,
+                                benchmarkData = state.benchmarkChartData
                             )
+                            if (state.benchmarkChartData.isNotEmpty()) {
+                                Spacer(Modifier.height(8.dp))
+                                BenchmarkLegend(
+                                    investmentName = state.investmentName,
+                                    benchmarkRatePercent = state.benchmarkRatePercent ?: 0.0
+                                )
+                            }
                         }
                     }
                 }
@@ -313,6 +344,112 @@ fun InvestmentDetailScreen(
 }
 
 @Composable
+private fun BenchmarkPickerButton(
+    currentRate: Double?,
+    onAction: (InvestmentDetailAction) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var showCustomDialog by remember { mutableStateOf(false) }
+    var customRateInput by remember { mutableStateOf("") }
+
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text(
+                text = when (currentRate) {
+                    null -> "Comparar"
+                    8.0 -> "Ref: CDT 8%"
+                    10.0 -> "Ref: Inflación 10%"
+                    12.0 -> "Ref: CDT 12%"
+                    else -> "Ref: ${String.format("%.0f%%", currentRate)}"
+                },
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            benchmarkPresets.forEach { (label, rate) ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = label,
+                            fontWeight = if (rate == currentRate) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        when (rate) {
+                            null -> onAction(InvestmentDetailAction.OnBenchmarkRateChanged(null))
+                            -1.0 -> {
+                                customRateInput = currentRate?.let { String.format("%.0f", it) } ?: ""
+                                showCustomDialog = true
+                            }
+                            else -> onAction(InvestmentDetailAction.OnBenchmarkRateChanged(rate))
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    if (showCustomDialog) {
+        AlertDialog(
+            onDismissRequest = { showCustomDialog = false },
+            title = { Text("Tasa de referencia") },
+            text = {
+                OutlinedTextField(
+                    value = customRateInput,
+                    onValueChange = { customRateInput = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text("% anual") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val parsed = customRateInput.toDoubleOrNull()
+                    if (parsed != null && parsed > 0.0) {
+                        onAction(InvestmentDetailAction.OnBenchmarkRateChanged(parsed))
+                    }
+                    showCustomDialog = false
+                }) { Text("Aplicar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCustomDialog = false }) { Text("Cancelar") }
+            }
+        )
+    }
+}
+
+@Composable
+private fun BenchmarkLegend(investmentName: String, benchmarkRatePercent: Double) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val benchmarkColor = MaterialTheme.colorScheme.tertiary
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(primaryColor)
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(investmentName, style = MaterialTheme.typography.labelSmall)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(benchmarkColor)
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "Referencia (${String.format("%.0f%%", benchmarkRatePercent)})",
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+    }
+}
+
+@Composable
 private fun MetricRow(
     label: String,
     value: String,
@@ -377,22 +514,48 @@ private fun EntryRow(entry: EntryUiModel, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ValueLineChart(snapshots: List<SnapshotPoint>, currency: String) {
+private fun ValueLineChart(
+    snapshots: List<SnapshotPoint>,
+    currency: String,
+    benchmarkData: List<Float> = emptyList()
+) {
     val modelProducer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(snapshots) {
+
+    LaunchedEffect(snapshots, benchmarkData) {
+        val hasBenchmark = benchmarkData.isNotEmpty() && benchmarkData.size == snapshots.size
         modelProducer.runTransaction {
-            lineSeries { series(snapshots.map { it.amountMinorUnits.toFloat() }) }
+            lineSeries {
+                series(snapshots.map { it.amountMinorUnits.toFloat() })
+                if (hasBenchmark) series(benchmarkData)
+            }
         }
     }
+
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val benchmarkColor = MaterialTheme.colorScheme.tertiary
+
+    // Stable line specs — remember so the layer isn't recreated every recomposition
+    val investmentLine = LineCartesianLayer.rememberLine(
+        fill = LineCartesianLayer.LineFill.single(fill(primaryColor))
+    )
+    val benchmarkLine = LineCartesianLayer.rememberLine(
+        fill = LineCartesianLayer.LineFill.single(fill(benchmarkColor)),
+        stroke = LineCartesianLayer.LineStroke.dashed()
+    )
+    val lineProvider = remember(investmentLine, benchmarkLine) {
+        LineCartesianLayer.LineProvider.series(investmentLine, benchmarkLine)
+    }
+
     val xFormatter = CartesianValueFormatter { _, x, _ ->
         snapshots.getOrNull(x.toInt())?.dateLabel ?: ""
     }
     val yFormatter = CartesianValueFormatter { _, y, _ ->
         CurrencyHelper.formatAbbr(y.toLong(), currency)
     }
+
     CartesianChartHost(
         chart = rememberCartesianChart(
-            rememberLineCartesianLayer(),
+            rememberLineCartesianLayer(lineProvider = lineProvider),
             startAxis = VerticalAxis.rememberStart(valueFormatter = yFormatter),
             bottomAxis = HorizontalAxis.rememberBottom(valueFormatter = xFormatter)
         ),

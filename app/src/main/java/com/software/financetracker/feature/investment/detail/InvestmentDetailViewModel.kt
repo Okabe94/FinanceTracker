@@ -44,6 +44,8 @@ class InvestmentDetailViewModel(
 
     private val _showDeleteDialog = MutableStateFlow(false)
     private val _pendingDeleteEntryId = MutableStateFlow<Long?>(null)
+    private val _benchmarkRate = MutableStateFlow<Double?>(null)
+    private val _showBenchmarkPicker = MutableStateFlow(false)
 
     private var pendingDeleteEntry: InvestmentEntryEntity? = null
     private var pendingDeleteJob: Job? = null
@@ -60,6 +62,13 @@ class InvestmentDetailViewModel(
         } else {
             buildState(investment, filteredEntries).copy(showDeleteInvestmentDialog = showDelete)
         }
+    }.combine(_benchmarkRate) { s, rate ->
+        val benchmarkData = if (rate != null && s.valueSnapshots.size >= 2 && s.investmentEntries.isNotEmpty()) {
+            computeBenchmark(s.investmentEntries, s.valueSnapshots, rate)
+        } else emptyList()
+        s.copy(benchmarkRatePercent = rate, benchmarkChartData = benchmarkData)
+    }.combine(_showBenchmarkPicker) { s, show ->
+        s.copy(showBenchmarkPicker = show)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000L),
@@ -93,6 +102,10 @@ class InvestmentDetailViewModel(
             InvestmentDetailAction.UndoDeleteEntry -> handleUndoDelete()
             InvestmentDetailAction.SaveEntries -> handleExportEntries(save = true)
             InvestmentDetailAction.ShareEntries -> handleExportEntries(save = false)
+            is InvestmentDetailAction.OnBenchmarkRateChanged ->
+                _benchmarkRate.update { action.rate }
+            InvestmentDetailAction.OnBenchmarkPickerToggled ->
+                _showBenchmarkPicker.update { !it }
         }
     }
 
@@ -156,7 +169,7 @@ class InvestmentDetailViewModel(
 
         val snapshots = sortedAsc
             .filter { it.entryType == EntryType.VALUE_SNAPSHOT.storageKey }
-            .map { SnapshotPoint(DateUtil.toDisplayDate(it.date), it.amountMinorUnits) }
+            .map { SnapshotPoint(DateUtil.toDisplayDate(it.date), it.amountMinorUnits, rawDate = it.date) }
 
         val entryUiModels = entries.map { entry ->
             val type = entry.entryType.toEntryType()
@@ -201,6 +214,55 @@ class InvestmentDetailViewModel(
         EntryType.WITHDRAWAL    -> 0xFFE53935L
         EntryType.DIVIDEND      -> 0xFFF59300L
         EntryType.NOTE          -> 0xFF616161L
+    }
+
+    private fun computeBenchmark(
+        entries: List<InvestmentEntryEntity>,
+        snapshots: List<SnapshotPoint>,
+        benchmarkRatePercent: Double
+    ): List<Float> {
+        if (snapshots.isEmpty()) return emptyList()
+
+        // Use first cash injection as reference; fall back to first snapshot value/date if none
+        val cashEntries = entries.filter { it.entryType == EntryType.CASH_INJECTION.storageKey }
+        val refDate: LocalDate
+        val principal: Long
+        if (cashEntries.isNotEmpty()) {
+            refDate = cashEntries.minOf { LocalDate.parse(it.date) }
+            principal = cashEntries.sumOf { it.amountMinorUnits }
+        } else {
+            val firstSnapshot = snapshots.firstOrNull { it.rawDate.isNotEmpty() } ?: return emptyList()
+            refDate = LocalDate.parse(firstSnapshot.rawDate)
+            principal = firstSnapshot.amountMinorUnits
+        }
+        if (principal == 0L) return emptyList()
+
+        val rate = benchmarkRatePercent / 100.0
+        val n = snapshots.size
+
+        val snapshotDates = snapshots.map { s ->
+            if (s.rawDate.isEmpty()) refDate
+            else runCatching { LocalDate.parse(s.rawDate) }.getOrElse { refDate }
+        }
+
+        // Measure actual span from refDate to the latest snapshot
+        val lastDate = snapshotDates.maxOrNull() ?: return emptyList()
+        val actualSpanDays = ChronoUnit.DAYS.between(refDate, lastDate)
+
+        // When snapshots all fall on the same day the compound formula gives (1+r)^0 = 1
+        // for every rate, producing identical lists → LaunchedEffect never re-fires.
+        // Spread values proportionally over 365 days so different rates show different curves.
+        val spreadOver365 = actualSpanDays < 1L
+
+        return snapshotDates.mapIndexed { index, date ->
+            val days = if (spreadOver365) {
+                if (n == 1) 365.0
+                else (index.toDouble() / (n - 1).toDouble()) * 365.0
+            } else {
+                ChronoUnit.DAYS.between(refDate, date).toDouble().coerceAtLeast(0.0)
+            }
+            (principal.toDouble() * (1.0 + rate).pow(days / 365.25)).toFloat()
+        }
     }
 }
 

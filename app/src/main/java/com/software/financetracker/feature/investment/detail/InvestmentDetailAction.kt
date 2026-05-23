@@ -12,4 +12,6 @@ sealed interface InvestmentDetailAction {
     data object UndoDeleteEntry : InvestmentDetailAction
     data object SaveEntries : InvestmentDetailAction
     data object ShareEntries : InvestmentDetailAction
+    data class OnBenchmarkRateChanged(val rate: Double?) : InvestmentDetailAction
+    data object OnBenchmarkPickerToggled : InvestmentDetailAction
 }

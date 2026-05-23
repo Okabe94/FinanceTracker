@@ -2,7 +2,7 @@ package com.software.financetracker.feature.investment.detail
 
 import com.software.financetracker.data.local.investment.InvestmentEntryEntity
 
-data class SnapshotPoint(val dateLabel: String, val amountMinorUnits: Long)
+data class SnapshotPoint(val dateLabel: String, val amountMinorUnits: Long, val rawDate: String = "")
 
 data class EntryUiModel(
     val id: Long,
@@ -31,5 +31,8 @@ data class InvestmentDetailState(
     val valueSnapshots: List<SnapshotPoint> = emptyList(),
     val entries: List<EntryUiModel> = emptyList(),
     val investmentEntries: List<InvestmentEntryEntity> = emptyList(),
-    val showDeleteInvestmentDialog: Boolean = false
+    val showDeleteInvestmentDialog: Boolean = false,
+    val benchmarkRatePercent: Double? = null,
+    val showBenchmarkPicker: Boolean = false,
+    val benchmarkChartData: List<Float> = emptyList()
 )
