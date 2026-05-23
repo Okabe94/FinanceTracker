@@ -21,10 +21,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -38,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
 
@@ -110,6 +114,9 @@ fun InvestmentListScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    state.portfolioSummary?.let { summary ->
+                        item { PortfolioSummaryCard(summary = summary) }
+                    }
                     items(state.investments, key = { it.id }) { card ->
                         InvestmentCard(
                             card = card,
@@ -117,6 +124,62 @@ fun InvestmentListScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PortfolioSummaryCard(summary: PortfolioSummary) {
+    val returnColor = if (summary.returnMinorUnits >= 0) Color(0xFF33B679) else MaterialTheme.colorScheme.error
+    val onContainer = MaterialTheme.colorScheme.onPrimaryContainer
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = Shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                "PORTAFOLIO",
+                style = MaterialTheme.typography.labelMedium,
+                color = onContainer.copy(alpha = 0.7f)
+            )
+            Text(
+                CurrencyHelper.format(summary.totalValueMinorUnits, "COP"),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = onContainer
+            )
+            HorizontalDivider(color = onContainer.copy(alpha = 0.12f))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Invertido", style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.7f))
+                Text(
+                    CurrencyHelper.format(summary.totalInvestedMinorUnits, "COP"),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = onContainer
+                )
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Retorno", style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.7f))
+                val sign = if (summary.returnMinorUnits >= 0) "+" else ""
+                val pctStr = summary.returnPercent?.let { " ($sign${String.format("%.1f", it)}%)" } ?: ""
+                Text(
+                    "$sign${CurrencyHelper.format(summary.returnMinorUnits, "COP")}$pctStr",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = returnColor
+                )
+            }
+            if (!summary.isCopOnly) {
+                Text(
+                    "* solo inversiones en COP",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = onContainer.copy(alpha = 0.6f)
+                )
             }
         }
     }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -35,6 +36,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -48,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -68,7 +76,8 @@ import com.software.financetracker.ui.theme.Shapes
 @Composable
 fun InvestmentDetailScreen(
     state: InvestmentDetailState,
-    onAction: (InvestmentDetailAction) -> Unit
+    onAction: (InvestmentDetailAction) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -91,6 +100,20 @@ fun InvestmentDetailScreen(
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(
+                                text = { Text("Guardar CSV") },
+                                onClick = {
+                                    showMenu = false
+                                    onAction(InvestmentDetailAction.SaveEntries)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Compartir CSV") },
+                                onClick = {
+                                    showMenu = false
+                                    onAction(InvestmentDetailAction.ShareEntries)
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text("Eliminar inversión") },
                                 onClick = {
                                     showMenu = false
@@ -110,6 +133,7 @@ fun InvestmentDetailScreen(
                 Icon(Icons.Rounded.Add, contentDescription = "Agregar movimiento")
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         if (state.isLoading) {
@@ -221,7 +245,47 @@ fun InvestmentDetailScreen(
                     )
                 }
                 items(state.entries, key = { it.id }) { entry ->
-                    EntryRow(entry = entry, onClick = { onAction(InvestmentDetailAction.OnEntryClick(entry.id)) })
+                    val density = LocalDensity.current
+                    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
+                    val dismissState = remember {
+                        SwipeToDismissBoxState(
+                            initialValue = SwipeToDismissBoxValue.Settled,
+                            density = density,
+                            confirmValueChange = { value ->
+                                if (value == SwipeToDismissBoxValue.EndToStart) {
+                                    onAction(InvestmentDetailAction.DeleteEntrySwipe(entry.id))
+                                }
+                                value == SwipeToDismissBoxValue.EndToStart
+                            },
+                            positionalThreshold = positionalThreshold
+                        )
+                    }
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        modifier = Modifier.animateItem(),
+                        enableDismissFromStartToEnd = false,
+                        backgroundContent = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(Shapes.medium)
+                                    .background(MaterialTheme.colorScheme.errorContainer)
+                                    .padding(end = 16.dp),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Delete,
+                                    contentDescription = "Eliminar movimiento",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    ) {
+                        EntryRow(
+                            entry = entry,
+                            onClick = { onAction(InvestmentDetailAction.OnEntryClick(entry.id)) }
+                        )
+                    }
                 }
                 item { Spacer(Modifier.height(64.dp)) }
             }

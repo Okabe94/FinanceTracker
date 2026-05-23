@@ -20,7 +20,7 @@ object ExportShareHelper {
         ).show()
     }
 
-    fun share(context: Context, csvContent: String) {
+    fun share(context: Context, csvContent: String, title: String = "Compartir CSV") {
         val filename = "financetracker_export_${System.currentTimeMillis()}.csv"
         val exportsDir = File(context.cacheDir, "exports")
         exportsDir.mkdirs()
@@ -33,7 +33,7 @@ object ExportShareHelper {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        context.startActivity(Intent.createChooser(intent, "Compartir gastos"))
+        context.startActivity(Intent.createChooser(intent, title))
     }
 
     private fun saveToDownloads(context: Context, csvContent: String, filename: String): Boolean {

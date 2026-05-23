@@ -1,5 +1,7 @@
 package com.software.financetracker.feature.investment.detail
 
+import com.software.financetracker.data.local.investment.InvestmentEntryEntity
+
 data class SnapshotPoint(val dateLabel: String, val amountMinorUnits: Long)
 
 data class EntryUiModel(
@@ -28,5 +30,6 @@ data class InvestmentDetailState(
     val dividendsFormatted: String = "",
     val valueSnapshots: List<SnapshotPoint> = emptyList(),
     val entries: List<EntryUiModel> = emptyList(),
+    val investmentEntries: List<InvestmentEntryEntity> = emptyList(),
     val showDeleteInvestmentDialog: Boolean = false
 )

@@ -8,4 +8,8 @@ sealed interface InvestmentDetailAction {
     data object OnDeleteInvestmentClick : InvestmentDetailAction
     data object OnDeleteInvestmentConfirm : InvestmentDetailAction
     data object OnDeleteInvestmentDismiss : InvestmentDetailAction
+    data class DeleteEntrySwipe(val entryId: Long) : InvestmentDetailAction
+    data object UndoDeleteEntry : InvestmentDetailAction
+    data object SaveEntries : InvestmentDetailAction
+    data object ShareEntries : InvestmentDetailAction
 }

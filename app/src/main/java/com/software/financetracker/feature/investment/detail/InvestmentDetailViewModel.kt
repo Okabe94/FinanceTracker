@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.software.financetracker.core.error.Result
+import com.software.financetracker.core.export.InvestmentExporter
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.data.local.investment.InvestmentEntryEntity
@@ -15,7 +16,9 @@ import com.software.financetracker.domain.model.investment.toEntryType
 import com.software.financetracker.domain.repository.InvestmentEntryRepository
 import com.software.financetracker.domain.repository.InvestmentRepository
 import com.software.financetracker.navigation.InvestmentDetailRoute
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -40,16 +43,22 @@ class InvestmentDetailViewModel(
     val events = _events.receiveAsFlow()
 
     private val _showDeleteDialog = MutableStateFlow(false)
+    private val _pendingDeleteEntryId = MutableStateFlow<Long?>(null)
+
+    private var pendingDeleteEntry: InvestmentEntryEntity? = null
+    private var pendingDeleteJob: Job? = null
 
     val state = combine(
         investmentRepository.observeAll().map { list -> list.find { it.id == route.investmentId } },
         entryRepository.observeByInvestment(route.investmentId),
-        _showDeleteDialog
-    ) { investment, entries, showDelete ->
+        _showDeleteDialog,
+        _pendingDeleteEntryId
+    ) { investment, entries, showDelete, pendingDeleteId ->
+        val filteredEntries = if (pendingDeleteId != null) entries.filter { it.id != pendingDeleteId } else entries
         if (investment == null) {
             InvestmentDetailState(isLoading = false, showDeleteInvestmentDialog = showDelete)
         } else {
-            buildState(investment, entries).copy(showDeleteInvestmentDialog = showDelete)
+            buildState(investment, filteredEntries).copy(showDeleteInvestmentDialog = showDelete)
         }
     }.stateIn(
         viewModelScope,
@@ -80,7 +89,51 @@ class InvestmentDetailViewModel(
             InvestmentDetailAction.OnDeleteInvestmentConfirm -> deleteInvestment()
             InvestmentDetailAction.OnDeleteInvestmentDismiss ->
                 _showDeleteDialog.update { false }
+            is InvestmentDetailAction.DeleteEntrySwipe -> handleDeleteEntrySwipe(action.entryId)
+            InvestmentDetailAction.UndoDeleteEntry -> handleUndoDelete()
+            InvestmentDetailAction.SaveEntries -> handleExportEntries(save = true)
+            InvestmentDetailAction.ShareEntries -> handleExportEntries(save = false)
         }
+    }
+
+    private fun handleDeleteEntrySwipe(entryId: Long) {
+        val entry = state.value.investmentEntries.find { it.id == entryId } ?: return
+
+        // Commit any in-progress pending delete immediately (user swiped another entry)
+        pendingDeleteJob?.cancel()
+        pendingDeleteEntry?.let { prev ->
+            viewModelScope.launch { entryRepository.delete(prev) }
+        }
+
+        pendingDeleteEntry = entry
+        _pendingDeleteEntryId.update { entryId }
+        viewModelScope.launch { _events.send(InvestmentDetailEvent.ShowUndoSnackbar) }
+
+        pendingDeleteJob = viewModelScope.launch {
+            delay(4_000L)
+            entryRepository.delete(entry)
+            pendingDeleteEntry = null
+            _pendingDeleteEntryId.update { null }
+        }
+    }
+
+    private fun handleUndoDelete() {
+        pendingDeleteJob?.cancel()
+        pendingDeleteJob = null
+        pendingDeleteEntry = null
+        _pendingDeleteEntryId.update { null }
+    }
+
+    private fun handleExportEntries(save: Boolean) {
+        val currentState = state.value
+        val csvContent = InvestmentExporter.toCsv(
+            investmentName = currentState.investmentName,
+            currency = currentState.currency,
+            entries = currentState.investmentEntries
+        )
+        val event = if (save) InvestmentDetailEvent.SaveInvestmentCsv(csvContent)
+                    else InvestmentDetailEvent.ShareInvestmentCsv(csvContent)
+        viewModelScope.launch { _events.send(event) }
     }
 
     private fun deleteInvestment() {
@@ -137,7 +190,8 @@ class InvestmentDetailViewModel(
             isPositiveReturn = metrics.returnMinorUnits >= 0,
             dividendsFormatted = CurrencyHelper.format(metrics.dividendsTotalMinorUnits, currency),
             valueSnapshots = snapshots,
-            entries = entryUiModels
+            entries = entryUiModels,
+            investmentEntries = entries
         )
     }
 
