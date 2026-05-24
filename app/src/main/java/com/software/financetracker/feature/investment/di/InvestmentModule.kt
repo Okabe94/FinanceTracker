@@ -10,6 +10,6 @@ import org.koin.dsl.module
 val investmentModule = module {
     viewModel { InvestmentListViewModel(get(), get(), get()) }
     viewModel { params -> InvestmentDetailViewModel(params.get(), get(), get()) }
-    viewModel { params -> InvestmentFormViewModel(params.get(), get()) }
+    viewModel { params -> InvestmentFormViewModel(params.get(), get(), get()) }
     viewModel { params -> InvestmentEntryFormViewModel(params.get(), get(), get()) }
 }

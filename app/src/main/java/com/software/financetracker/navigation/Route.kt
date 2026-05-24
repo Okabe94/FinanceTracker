@@ -59,3 +59,6 @@ data class GoalDetailRoute(val goalId: Long)
 
 @Serializable
 data class GoalFormRoute(val goalId: Long? = null)
+
+@Serializable
+object SettingsRoute

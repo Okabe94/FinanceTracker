@@ -10,13 +10,19 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.navigation.RootNavGraph
 import com.software.financetracker.ui.theme.FinanceTrackerTheme
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
+    private val prefs: UserPreferences by inject()
+
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { /* result handled silently — worker no-ops if permission is denied */ }
@@ -26,7 +32,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         requestNotificationPermissionIfNeeded()
         setContent {
-            FinanceTrackerTheme {
+            val themeMode by prefs.themeMode.collectAsStateWithLifecycle(initialValue = com.software.financetracker.ui.theme.ThemeMode.DARK)
+            FinanceTrackerTheme(themeMode = themeMode) {
                 val navController = rememberNavController()
                 DisposableEffect(navController) {
                     val listener = Consumer<Intent> { navController.handleDeepLink(it) }

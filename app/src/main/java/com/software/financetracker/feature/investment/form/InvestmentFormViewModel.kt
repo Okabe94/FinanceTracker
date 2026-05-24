@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.software.financetracker.core.error.Result
+import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.core.presentation.UiText
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.core.util.DateUtil
@@ -14,6 +15,7 @@ import com.software.financetracker.navigation.InvestmentFormRoute
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,7 +24,8 @@ import java.time.ZoneOffset
 
 class InvestmentFormViewModel(
     savedStateHandle: SavedStateHandle,
-    private val investmentRepository: InvestmentRepository
+    private val investmentRepository: InvestmentRepository,
+    private val prefs: UserPreferences
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<InvestmentFormRoute>()
@@ -34,6 +37,13 @@ class InvestmentFormViewModel(
     val events = _events.receiveAsFlow()
 
     init {
+        if (route.investmentId == null) {
+            viewModelScope.launch {
+                val currency = prefs.defaultCurrency.first()
+                _state.update { it.copy(selectedCurrency = currency) }
+            }
+        }
+
         route.investmentId?.let { id ->
             viewModelScope.launch {
                 val result = investmentRepository.getById(id)

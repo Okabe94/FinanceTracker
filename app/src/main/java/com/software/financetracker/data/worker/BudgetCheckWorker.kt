@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.software.financetracker.core.notification.NotificationHelper
-import com.software.financetracker.core.preferences.UserPreferencesRepository
+import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.data.local.category.CategoryDao
 import com.software.financetracker.data.local.expense.ExpenseDao
@@ -23,7 +23,7 @@ class BudgetCheckWorker(
     private val categoryDao: CategoryDao by inject()
     private val expenseDao: ExpenseDao by inject()
     private val notificationStateDao: NotificationStateDao by inject()
-    private val userPreferencesRepository: UserPreferencesRepository by inject()
+    private val userPreferencesRepository: UserPreferences by inject()
 
     override suspend fun doWork(): Result {
         if (!userPreferencesRepository.notificationsEnabled.first()) return Result.success()

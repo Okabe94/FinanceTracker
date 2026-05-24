@@ -16,4 +16,8 @@ class FakeExchangeRateRepository : ExchangeRateRepository {
     override fun getAll(): Flow<List<ExchangeRateEntity>> = _flow
 
     override suspend fun refresh() {}
+
+    override suspend fun upsert(entity: ExchangeRateEntity) {
+        _flow.value = _flow.value.filterNot { it.fromCurrency == entity.fromCurrency } + entity
+    }
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ import com.software.financetracker.navigation.feature.homeNavGraph
 import com.software.financetracker.navigation.feature.incomeNavGraph
 import com.software.financetracker.navigation.feature.investmentNavGraph
 import com.software.financetracker.navigation.feature.metricsNavGraph
+import com.software.financetracker.navigation.feature.settingsNavGraph
 
 @Composable
 fun RootNavGraph(navController: NavHostController = rememberNavController()) {
@@ -72,6 +74,20 @@ fun RootNavGraph(navController: NavHostController = rememberNavController()) {
                     icon = { Icon(Icons.Rounded.TrendingUp, contentDescription = null) },
                     label = { Text("Inversiones") }
                 )
+                NavigationBarItem(
+                    selected = currentDestination?.hierarchy?.any { it.hasRoute(SettingsRoute::class) } == true,
+                    onClick = {
+                        navController.navigate(SettingsRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    icon = { Icon(Icons.Rounded.Settings, contentDescription = null) },
+                    label = { Text("Configuración") }
+                )
             }
         }
     ) { innerPadding ->
@@ -107,6 +123,7 @@ fun RootNavGraph(navController: NavHostController = rememberNavController()) {
             investmentNavGraph(navController)
             incomeNavGraph(navController)
             goalNavGraph(navController)
+            settingsNavGraph(navController)
         }
     }
 }

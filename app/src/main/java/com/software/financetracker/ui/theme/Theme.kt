@@ -6,6 +6,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
+enum class ThemeMode { SYSTEM, DARK, LIGHT }
+
 private val LightColorScheme = lightColorScheme(
     // Primary — filled CTAs, FAB, interactive controls
     primary = GreenAccent,
@@ -69,9 +71,14 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun FinanceTrackerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.DARK,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themeMode) {
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = Typography,

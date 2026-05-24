@@ -47,8 +47,10 @@ fun MonthSelector(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onPrevious) {
-                Icon(Icons.Rounded.ChevronLeft, contentDescription = "Mes anterior")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onPrevious) {
+                    Icon(Icons.Rounded.ChevronLeft, contentDescription = "Mes anterior")
+                }
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
@@ -75,8 +77,10 @@ fun MonthSelector(
                     )
                 }
             }
-            IconButton(onClick = onNext) {
-                Icon(Icons.Rounded.ChevronRight, contentDescription = "Mes siguiente")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onNext) {
+                    Icon(Icons.Rounded.ChevronRight, contentDescription = "Mes siguiente")
+                }
             }
         }
     }

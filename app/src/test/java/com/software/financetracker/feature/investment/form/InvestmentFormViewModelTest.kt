@@ -9,6 +9,7 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.software.financetracker.data.local.investment.InvestmentEntity
 import com.software.financetracker.fake.FakeInvestmentRepository
+import com.software.financetracker.fake.FakeUserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -28,6 +29,7 @@ import org.robolectric.annotation.Config
 class InvestmentFormViewModelTest {
 
     private lateinit var investmentRepository: FakeInvestmentRepository
+    private val fakePrefs = FakeUserPreferencesRepository()
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private val sampleInvestment = InvestmentEntity(
@@ -54,7 +56,7 @@ class InvestmentFormViewModelTest {
 
     private fun buildViewModel(investmentId: Long? = null): InvestmentFormViewModel {
         val savedStateHandle = SavedStateHandle(mapOf("investmentId" to investmentId))
-        return InvestmentFormViewModel(savedStateHandle, investmentRepository)
+        return InvestmentFormViewModel(savedStateHandle, investmentRepository, fakePrefs)
     }
 
     @Test

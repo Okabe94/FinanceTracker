@@ -25,10 +25,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AttachMoney
+import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Receipt
 import androidx.compose.material.icons.rounded.Savings
-import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -81,7 +81,7 @@ fun HomeScreen(
                 isCurrentMonth = state.isCurrentMonth,
                 onPrevious = { onAction(HomeAction.OnPreviousMonthClick) },
                 onNext = { onAction(HomeAction.OnNextMonthClick) },
-                onGoToCurrentMonth = { onAction(HomeAction.OnGoToCurrentMonthClick) }
+                onGoToCurrentMonth = { onAction(HomeAction.OnGoToCurrentMonthClick) },
             )
         },
         floatingActionButton = {
@@ -94,7 +94,7 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ) {
-                    Icon(Icons.Rounded.TrendingUp, contentDescription = "Ver métricas")
+                    Icon(Icons.Rounded.BarChart, contentDescription = "Ver métricas")
                 }
 
                 AnimatedVisibility(
@@ -203,7 +203,7 @@ fun HomeScreen(
 
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 120.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {

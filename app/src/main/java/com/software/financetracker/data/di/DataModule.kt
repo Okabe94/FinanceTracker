@@ -1,6 +1,7 @@
 package com.software.financetracker.data.di
 
 import androidx.room.Room
+import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.core.preferences.UserPreferencesRepository
 import com.software.financetracker.data.local.FinanceDatabase
 import com.software.financetracker.data.repository.CategoryRepositoryImpl
@@ -52,7 +53,7 @@ val dataModule = module {
     single { get<FinanceDatabase>().recurringIncomeDao() }
     single { get<FinanceDatabase>().goalDao() }
     single { ExchangeRateRemoteDataSource() }
-    single<ExchangeRateRepository> { ExchangeRateRepositoryImpl(get(), get()) }
+    single<ExchangeRateRepository> { ExchangeRateRepositoryImpl(get(), get(), get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), androidContext()) }
     single<RecurringExpenseRepository> { RecurringExpenseRepositoryImpl(get()) }
@@ -61,5 +62,5 @@ val dataModule = module {
     single<IncomeRepository> { IncomeRepositoryImpl(get()) }
     single<RecurringIncomeRepository> { RecurringIncomeRepositoryImpl(get()) }
     single<GoalRepository> { GoalRepositoryImpl(get()) }
-    single { UserPreferencesRepository(androidContext()) }
+    single<UserPreferences> { UserPreferencesRepository(androidContext()) }
 }
