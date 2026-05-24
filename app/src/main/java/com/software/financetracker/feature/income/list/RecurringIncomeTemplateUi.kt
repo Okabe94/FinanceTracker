@@ -1,4 +1,4 @@
-package com.software.financetracker.feature.income.recurring.list
+package com.software.financetracker.feature.income.list
 
 import com.software.financetracker.domain.model.RecurrenceType
 

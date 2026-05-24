@@ -22,9 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -42,9 +45,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.domain.model.displayName
 import com.software.financetracker.ui.components.FinanceTrackerFab
 import com.software.financetracker.ui.components.MonthSelector
-import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
 import java.text.NumberFormat
 import java.util.Locale
@@ -116,12 +119,6 @@ fun CategoryDetailScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        imageVector = iconForKey(state.categoryIconKey),
-                        contentDescription = null,
-                        tint = Color(state.categoryColorArgb),
-                        modifier = Modifier.size(24.dp)
-                    )
                     Text(
                         text = formatCop(state.amountSpent),
                         style = MaterialTheme.typography.headlineSmall,
@@ -159,13 +156,14 @@ fun CategoryDetailScreen(
                 }
             }
 
-            val expenseContentState = when {
+            val contentState = when {
                 state.isLoading -> 0
-                state.expenses.isEmpty() -> 1
+                state.recurringExpenses.isEmpty() && state.expenses.isEmpty() -> 1
                 else -> 2
             }
+
             AnimatedContent(
-                targetState = expenseContentState,
+                targetState = contentState,
                 transitionSpec = {
                     fadeIn(animationSpec = tween(durationMillis = 300)) togetherWith
                         fadeOut(animationSpec = tween(durationMillis = 150))
@@ -178,7 +176,7 @@ fun CategoryDetailScreen(
                     }
                     1 -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                         Text(
-                            text = "No hay gastos este mes",
+                            text = "Sin gastos este mes",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -188,16 +186,101 @@ fun CategoryDetailScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(state.expenses, key = { it.id }) { expense ->
-                            ExpenseListItem(
-                                expense = expense,
-                                onClick = { onAction(CategoryDetailAction.OnExpenseClick(expense.id)) },
-                                modifier = Modifier.animateItem()
-                            )
+                        if (state.recurringExpenses.isNotEmpty()) {
+                            item {
+                                Text(
+                                    text = "Recurrentes",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                            }
+                            items(state.recurringExpenses, key = { "r${it.id}" }) { template ->
+                                RecurringTemplateListItem(
+                                    template = template,
+                                    onClick = { onAction(CategoryDetailAction.OnRecurringExpenseClick(template.id)) },
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        }
+                        if (state.expenses.isNotEmpty()) {
+                            item {
+                                Text(
+                                    text = "Este mes",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = if (state.recurringExpenses.isNotEmpty()) 8.dp else 0.dp, bottom = 4.dp)
+                                )
+                            }
+                            items(state.expenses, key = { it.id }) { expense ->
+                                ExpenseListItem(
+                                    expense = expense,
+                                    onClick = { onAction(CategoryDetailAction.OnExpenseClick(expense.id)) },
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RecurringTemplateListItem(
+    template: RecurringTemplateUi,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(
+        onClick = onClick,
+        shape = Shapes.medium,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.Repeat,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        template.recurrenceType.displayName(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (!template.isActive) {
+                        Text(
+                            "Pausado",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                if (template.description.isNotBlank()) {
+                    Text(template.description, style = MaterialTheme.typography.bodyMedium)
+                }
+                Text(
+                    text = "Próximo: ${template.displayNextDueDate}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = formatCop(template.amountCop),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -219,8 +302,21 @@ private fun ExpenseListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                if (expense.description.isNotBlank()) {
-                    Text(expense.description, style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (expense.isAutoGenerated) {
+                        Icon(
+                            Icons.Rounded.Repeat,
+                            contentDescription = "Generado automáticamente",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (expense.description.isNotBlank()) {
+                        Text(expense.description, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
                 Text(
                     text = expense.displayDate,

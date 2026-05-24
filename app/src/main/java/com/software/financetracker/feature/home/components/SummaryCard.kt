@@ -1,5 +1,6 @@
 package com.software.financetracker.feature.home.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,9 +23,6 @@ fun SummaryCard(
     totalSpent: Long,
     totalLimit: Long,
     hasAnyLimit: Boolean,
-    totalIncomeCop: Long = 0L,
-    netBalanceCop: Long = 0L,
-    hasIncomeData: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
@@ -33,29 +31,14 @@ fun SummaryCard(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Resumen del mes", style = MaterialTheme.typography.titleMedium)
+            Text("Gastado este mes", style = MaterialTheme.typography.titleMedium)
             Text(
-                text = "Total gastado: ${formatCop(totalSpent)}",
-                style = MaterialTheme.typography.bodyLarge,
+                text = formatCop(totalSpent),
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-            if (hasIncomeData) {
-                Text(
-                    text = "Total ingresos: ${formatCop(totalIncomeCop)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                val balanceColor = if (netBalanceCop >= 0L) MaterialTheme.colorScheme.primary
-                                   else MaterialTheme.colorScheme.error
-                Text(
-                    text = "Balance neto: ${formatCop(netBalanceCop)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = balanceColor,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
             if (hasAnyLimit && totalLimit > 0) {
                 val progress = (totalSpent.toFloat() / totalLimit).coerceIn(0f, 1f)
                 val isOver = totalSpent > totalLimit
@@ -66,10 +49,13 @@ fun SummaryCard(
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.fillMaxWidth().clip(CircleShape)
                 )
+                val available = totalLimit - totalSpent
                 Text(
-                    text = "Límite total: ${formatCop(totalLimit)}",
+                    text = if (isOver) "Límite superado  /  límite ${formatCop(totalLimit)}"
+                           else "${formatCop(available)} disponible  /  límite ${formatCop(totalLimit)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isOver) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

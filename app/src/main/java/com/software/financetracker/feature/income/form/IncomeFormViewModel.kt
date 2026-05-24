@@ -8,7 +8,12 @@ import com.software.financetracker.core.error.Result
 import com.software.financetracker.core.presentation.UiText
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.data.local.income.IncomeEntity
+import com.software.financetracker.data.local.income.RecurringIncomeEntity
+import com.software.financetracker.domain.model.RecurrenceType
+import com.software.financetracker.domain.model.toRecurrenceType
+import com.software.financetracker.domain.model.toStorageString
 import com.software.financetracker.domain.repository.IncomeRepository
+import com.software.financetracker.domain.repository.RecurringIncomeRepository
 import com.software.financetracker.feature.income.IncomeSourceType
 import com.software.financetracker.feature.income.toIncomeSourceType
 import com.software.financetracker.navigation.IncomeFormRoute
@@ -24,7 +29,8 @@ import java.time.format.DateTimeFormatter
 
 class IncomeFormViewModel(
     savedStateHandle: SavedStateHandle,
-    private val incomeRepository: IncomeRepository
+    private val incomeRepository: IncomeRepository,
+    private val recurringIncomeRepository: RecurringIncomeRepository
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<IncomeFormRoute>()
@@ -51,6 +57,32 @@ class IncomeFormViewModel(
                             notes = e.notes,
                             selectedDateStorage = e.date,
                             displayDate = DateUtil.toDisplayDate(e.date)
+                        )
+                    }
+                }
+            }
+        }
+
+        route.recurringIncomeId?.let { id ->
+            viewModelScope.launch {
+                val result = recurringIncomeRepository.getById(id)
+                if (result is Result.Success) {
+                    val e = result.data
+                    val sourceType = e.source.toIncomeSourceType()
+                    val recurrenceType = e.recurrenceType.toRecurrenceType()
+                    _state.update {
+                        it.copy(
+                            recurringIncomeId = e.id,
+                            amountInput = e.amountCop.toString(),
+                            selectedSourceType = sourceType,
+                            customSource = if (sourceType == IncomeSourceType.OTHER) e.source else "",
+                            notes = e.notes,
+                            selectedDateStorage = e.startDate,
+                            displayDate = DateUtil.toDisplayDate(e.startDate),
+                            isRecurring = true,
+                            recurrenceType = recurrenceType,
+                            customIntervalDays = if (recurrenceType is RecurrenceType.Custom) recurrenceType.intervalDays else 7,
+                            isActive = e.isActive
                         )
                     }
                 }
@@ -85,6 +117,16 @@ class IncomeFormViewModel(
             }
             IncomeFormAction.OnDatePickerDismiss ->
                 _state.update { it.copy(showDatePicker = false) }
+            IncomeFormAction.OnToggleRecurring ->
+                _state.update { it.copy(isRecurring = !it.isRecurring) }
+            is IncomeFormAction.OnRecurrenceTypeSelect ->
+                _state.update { it.copy(recurrenceType = action.type) }
+            is IncomeFormAction.OnCustomIntervalChange -> {
+                val days = action.days.toIntOrNull() ?: return
+                if (days > 0) _state.update { it.copy(customIntervalDays = days) }
+            }
+            IncomeFormAction.OnToggleActive ->
+                _state.update { it.copy(isActive = !it.isActive) }
             IncomeFormAction.OnSaveClick -> save()
             IncomeFormAction.OnDeleteClick ->
                 _state.update { it.copy(showDeleteConfirmDialog = true) }
@@ -110,16 +152,58 @@ class IncomeFormViewModel(
             _state.update { it.copy(amountError = UiText.DynamicString("Ingresa la fuente del ingreso")) }
             return
         }
+        val recurrenceType = if (s.isRecurring && s.recurrenceType is RecurrenceType.Custom) {
+            RecurrenceType.Custom(s.customIntervalDays)
+        } else {
+            s.recurrenceType
+        }
         _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            val entity = IncomeEntity(
-                id = s.incomeId ?: 0L,
-                amountCop = amount,
-                source = resolvedSource,
-                date = s.selectedDateStorage,
-                notes = s.notes.trim()
-            )
-            when (incomeRepository.upsert(entity)) {
+            val result = when {
+                s.recurringIncomeId != null -> {
+                    val existing = recurringIncomeRepository.getById(s.recurringIncomeId)
+                    val nextDue = if (existing is Result.Success) existing.data.nextDueDate
+                                  else s.selectedDateStorage
+                    recurringIncomeRepository.upsert(
+                        RecurringIncomeEntity(
+                            id = s.recurringIncomeId,
+                            amountCop = amount,
+                            source = resolvedSource,
+                            notes = s.notes.trim(),
+                            recurrenceType = recurrenceType.toStorageString(),
+                            startDate = s.selectedDateStorage,
+                            nextDueDate = nextDue,
+                            isActive = s.isActive
+                        )
+                    )
+                }
+                s.isRecurring -> {
+                    recurringIncomeRepository.upsert(
+                        RecurringIncomeEntity(
+                            id = 0L,
+                            amountCop = amount,
+                            source = resolvedSource,
+                            notes = s.notes.trim(),
+                            recurrenceType = recurrenceType.toStorageString(),
+                            startDate = s.selectedDateStorage,
+                            nextDueDate = s.selectedDateStorage,
+                            isActive = true
+                        )
+                    )
+                }
+                else -> {
+                    incomeRepository.upsert(
+                        IncomeEntity(
+                            id = s.incomeId ?: 0L,
+                            amountCop = amount,
+                            source = resolvedSource,
+                            date = s.selectedDateStorage,
+                            notes = s.notes.trim()
+                        )
+                    )
+                }
+            }
+            when (result) {
                 is Result.Success -> _events.send(IncomeFormEvent.NavigateBack)
                 is Result.Error -> _events.send(IncomeFormEvent.ShowError(UiText.DynamicString("Error al guardar el ingreso")))
             }
@@ -128,12 +212,21 @@ class IncomeFormViewModel(
     }
 
     private fun delete() {
-        val id = _state.value.incomeId ?: return
+        val s = _state.value
         viewModelScope.launch {
-            val result = incomeRepository.getById(id)
-            if (result is Result.Success) {
-                incomeRepository.delete(result.data)
-                _events.send(IncomeFormEvent.NavigateBack)
+            if (s.recurringIncomeId != null) {
+                val result = recurringIncomeRepository.getById(s.recurringIncomeId)
+                if (result is Result.Success) {
+                    recurringIncomeRepository.delete(result.data)
+                    _events.send(IncomeFormEvent.NavigateBack)
+                }
+            } else {
+                val id = s.incomeId ?: return@launch
+                val result = incomeRepository.getById(id)
+                if (result is Result.Success) {
+                    incomeRepository.delete(result.data)
+                    _events.send(IncomeFormEvent.NavigateBack)
+                }
             }
         }
     }

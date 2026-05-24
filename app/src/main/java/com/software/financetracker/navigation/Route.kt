@@ -12,19 +12,14 @@ data class CategoryDetailRoute(val categoryId: Long, val selectedMonth: String)
 data class CategoryFormRoute(val categoryId: Long? = null)
 
 @Serializable
-data class ExpenseFormRoute(val categoryId: Long, val expenseId: Long? = null)
+data class ExpenseFormRoute(
+    val categoryId: Long? = null,
+    val expenseId: Long? = null,
+    val recurringExpenseId: Long? = null
+)
 
 @Serializable
 object MetricsRoute
-
-@Serializable
-object RecurringListRoute
-
-@Serializable
-data class RecurringExpenseFormRoute(
-    val categoryId: Long = 0L,
-    val recurringExpenseId: Long? = null
-)
 
 @Serializable
 object InvestmentListRoute
@@ -48,16 +43,13 @@ data class AssistantExpenseRoute(
 )
 
 @Serializable
-data class IncomeFormRoute(val incomeId: Long? = null)
+data class IncomeFormRoute(
+    val incomeId: Long? = null,
+    val recurringIncomeId: Long? = null
+)
 
 @Serializable
 object IncomeListRoute
-
-@Serializable
-object RecurringIncomeListRoute
-
-@Serializable
-data class RecurringIncomeFormRoute(val recurringIncomeId: Long? = null)
 
 @Serializable
 object GoalListRoute

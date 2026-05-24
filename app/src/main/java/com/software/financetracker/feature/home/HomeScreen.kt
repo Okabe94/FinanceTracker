@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,20 +27,21 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Receipt
-import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,13 +49,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.feature.goal.list.GoalUiModel
 import com.software.financetracker.feature.home.components.CategoryCard
+import com.software.financetracker.feature.home.components.IncomeCard
 import com.software.financetracker.feature.home.components.SummaryCard
+import com.software.financetracker.feature.home.components.formatCop
 import com.software.financetracker.ui.components.MonthSelector
-import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,108 +112,29 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Surface(
-                                shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colorScheme.surface,
-                                shadowElevation = 2.dp,
-                                tonalElevation = 2.dp
-                            ) {
-                                Text(
-                                    text = "Nueva categoría",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    onAction(HomeAction.OnAddCategoryClick)
-                                }
-                            ) {
-                                Icon(Icons.Rounded.Category, contentDescription = "Nueva categoría")
-                            }
+                        FabMenuItem(label = "Nueva categoría", icon = {
+                            Icon(Icons.Rounded.Category, contentDescription = "Nueva categoría")
+                        }) {
+                            isFabExpanded = false
+                            onAction(HomeAction.OnAddCategoryClick)
                         }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Surface(
-                                shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colorScheme.surface,
-                                shadowElevation = 2.dp,
-                                tonalElevation = 2.dp
-                            ) {
-                                Text(
-                                    text = "Gastos",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    onAction(HomeAction.OnRecurringExpensesClick)
-                                }
-                            ) {
-                                Icon(Icons.Rounded.Receipt, contentDescription = "Gastos")
-                            }
+                        FabMenuItem(label = "Nuevo gasto", icon = {
+                            Icon(Icons.Rounded.Receipt, contentDescription = "Nuevo gasto")
+                        }) {
+                            isFabExpanded = false
+                            onAction(HomeAction.OnAddExpenseClick)
                         }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Surface(
-                                shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colorScheme.surface,
-                                shadowElevation = 2.dp,
-                                tonalElevation = 2.dp
-                            ) {
-                                Text(
-                                    text = "Ingresos",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    onAction(HomeAction.OnViewIncomeClick)
-                                }
-                            ) {
-                                Icon(Icons.Rounded.AttachMoney, contentDescription = "Ingresos")
-                            }
+                        FabMenuItem(label = "Nuevo ingreso", icon = {
+                            Icon(Icons.Rounded.AttachMoney, contentDescription = "Nuevo ingreso")
+                        }) {
+                            isFabExpanded = false
+                            onAction(HomeAction.OnAddIncomeClick)
                         }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Surface(
-                                shape = MaterialTheme.shapes.small,
-                                color = MaterialTheme.colorScheme.surface,
-                                shadowElevation = 2.dp,
-                                tonalElevation = 2.dp
-                            ) {
-                                Text(
-                                    text = "Metas de ahorro",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFabExpanded = false
-                                    onAction(HomeAction.OnGoalsClick)
-                                }
-                            ) {
-                                Icon(Icons.Rounded.Savings, contentDescription = "Metas de ahorro")
-                            }
+                        FabMenuItem(label = "Nueva meta", icon = {
+                            Icon(Icons.Rounded.Savings, contentDescription = "Nueva meta")
+                        }) {
+                            isFabExpanded = false
+                            onAction(HomeAction.OnAddGoalClick)
                         }
                     }
                 }
@@ -248,9 +172,7 @@ fun HomeScreen(
                 0 -> Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
                     contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                ) { CircularProgressIndicator() }
 
                 1 -> Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
@@ -280,9 +202,7 @@ fun HomeScreen(
                 }
 
                 else -> LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -290,12 +210,30 @@ fun HomeScreen(
                         SummaryCard(
                             totalSpent = state.totalSpent,
                             totalLimit = state.totalLimit,
-                            hasAnyLimit = state.hasAnyLimit,
-                            totalIncomeCop = state.totalIncomeCop,
-                            netBalanceCop = state.netBalanceCop,
-                            hasIncomeData = state.hasIncomeData
+                            hasAnyLimit = state.hasAnyLimit
                         )
                     }
+
+                    if (state.hasIncomeData) {
+                        item {
+                            IncomeCard(
+                                totalIncomeCop = state.totalIncomeCop,
+                                netBalanceCop = state.netBalanceCop,
+                                onClick = { onAction(HomeAction.OnIncomeCardClick) }
+                            )
+                        }
+                    }
+
+                    if (state.hasGoals) {
+                        item {
+                            GoalsSection(
+                                goals = state.activeGoals,
+                                onGoalClick = { onAction(HomeAction.OnGoalCardClick(it)) },
+                                onViewAllClick = { onAction(HomeAction.OnViewAllGoalsClick) }
+                            )
+                        }
+                    }
+
                     items(state.categories, key = { it.id }) { category ->
                         CategoryCard(
                             category = category,
@@ -305,6 +243,110 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FabMenuItem(
+    label: String,
+    icon: @Composable () -> Unit,
+    onClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.small,
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 2.dp,
+            tonalElevation = 2.dp
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+        SmallFloatingActionButton(onClick = onClick, content = icon)
+    }
+}
+
+@Composable
+private fun GoalsSection(
+    goals: List<GoalUiModel>,
+    onGoalClick: (Long) -> Unit,
+    onViewAllClick: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Metas activas",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        goals.take(3).forEach { goal ->
+            GoalCompactCard(goal = goal, onClick = { onGoalClick(goal.id) })
+        }
+        if (goals.size > 3) {
+            TextButton(onClick = onViewAllClick, modifier = Modifier.align(Alignment.End)) {
+                Text("Ver todas (${goals.size})")
+            }
+        }
+    }
+}
+
+@Composable
+private fun GoalCompactCard(
+    goal: GoalUiModel,
+    onClick: () -> Unit
+) {
+    ElevatedCard(
+        onClick = onClick,
+        shape = Shapes.medium,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(goal.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = "${goal.progressPercent.toInt()}%",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            LinearProgressIndicator(
+                progress = { (goal.progressPercent / 100f).coerceIn(0f, 1f) },
+                modifier = Modifier.fillMaxWidth().clip(CircleShape),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatCop(goal.currentAmountCop),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "Meta: ${formatCop(goal.targetAmountCop)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = "Vence: ${goal.deadlineDisplay}",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (goal.isOverdue) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

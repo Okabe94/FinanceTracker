@@ -7,11 +7,13 @@ import androidx.navigation.NavController
 import com.software.financetracker.core.presentation.ObserveAsEvents
 import com.software.financetracker.navigation.CategoryDetailRoute
 import com.software.financetracker.navigation.CategoryFormRoute
+import com.software.financetracker.navigation.ExpenseFormRoute
+import com.software.financetracker.navigation.GoalDetailRoute
+import com.software.financetracker.navigation.GoalFormRoute
 import com.software.financetracker.navigation.GoalListRoute
 import com.software.financetracker.navigation.IncomeFormRoute
 import com.software.financetracker.navigation.IncomeListRoute
 import com.software.financetracker.navigation.MetricsRoute
-import com.software.financetracker.navigation.RecurringListRoute
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -29,16 +31,22 @@ fun HomeScreenRoot(navController: NavController) {
             HomeEvent.NavigateToMetrics ->
                 navController.navigate(MetricsRoute)
 
-            HomeEvent.NavigateToRecurringExpenses ->
-                navController.navigate(RecurringListRoute)
+            HomeEvent.NavigateToAddExpense ->
+                navController.navigate(ExpenseFormRoute())
 
             HomeEvent.NavigateToAddIncome ->
                 navController.navigate(IncomeFormRoute())
 
+            HomeEvent.NavigateToAddGoal ->
+                navController.navigate(GoalFormRoute())
+
             HomeEvent.NavigateToIncomeList ->
                 navController.navigate(IncomeListRoute)
 
-            HomeEvent.NavigateToGoals ->
+            is HomeEvent.NavigateToGoalDetail ->
+                navController.navigate(GoalDetailRoute(event.goalId))
+
+            HomeEvent.NavigateToGoalList ->
                 navController.navigate(GoalListRoute)
         }
     }

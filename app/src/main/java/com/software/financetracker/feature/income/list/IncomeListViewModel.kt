@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.software.financetracker.core.error.Result
 import com.software.financetracker.core.util.DateUtil
-import com.software.financetracker.domain.model.displayName
 import com.software.financetracker.domain.model.toRecurrenceType
 import com.software.financetracker.domain.repository.IncomeRepository
 import com.software.financetracker.domain.repository.RecurringIncomeRepository
@@ -27,28 +26,29 @@ class IncomeListViewModel(
         recurringIncomeRepository.observeActive(),
         incomeRepository.observeInRange("2000-01-01", "2099-12-31")
     ) { templates, entries ->
-        val items = buildList {
-            templates.forEach { t ->
-                add(IncomeItem.Template(
+        IncomeListState(
+            recurringTemplates = templates.map { t ->
+                RecurringIncomeTemplateUi(
                     id = t.id,
                     amountCop = t.amountCop,
                     source = t.source,
-                    recurrenceLabel = t.recurrenceType.toRecurrenceType().displayName(),
-                    displayNextDueDate = DateUtil.toDisplayDate(t.nextDueDate)
-                ))
-            }
-            entries.forEach { e ->
-                add(IncomeItem.Entry(
+                    recurrenceType = t.recurrenceType.toRecurrenceType(),
+                    displayNextDueDate = DateUtil.toDisplayDate(t.nextDueDate),
+                    isActive = t.isActive
+                )
+            },
+            items = entries.map { e ->
+                IncomeItem.Entry(
                     id = e.id,
                     amountCop = e.amountCop,
                     source = e.source,
                     displayDate = DateUtil.toDisplayDate(e.date),
                     notes = e.notes,
                     isFromTemplate = e.recurringIncomeId != null
-                ))
-            }
-        }
-        IncomeListState(items = items, isLoading = false)
+                )
+            },
+            isLoading = false
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), IncomeListState())
 
     fun onAction(action: IncomeListAction) {
@@ -57,12 +57,10 @@ class IncomeListViewModel(
                 viewModelScope.launch { _events.send(IncomeListEvent.NavigateBack) }
             IncomeListAction.OnAddIncomeClick ->
                 viewModelScope.launch { _events.send(IncomeListEvent.NavigateToAddIncome) }
-            IncomeListAction.OnAddTemplateClick ->
-                viewModelScope.launch { _events.send(IncomeListEvent.NavigateToAddTemplate) }
             is IncomeListAction.OnEntryClick ->
                 viewModelScope.launch { _events.send(IncomeListEvent.NavigateToEditIncome(action.incomeId)) }
             is IncomeListAction.OnTemplateClick ->
-                viewModelScope.launch { _events.send(IncomeListEvent.NavigateToEditTemplate(action.templateId)) }
+                viewModelScope.launch { _events.send(IncomeListEvent.NavigateToEditRecurringIncome(action.templateId)) }
             is IncomeListAction.OnDeleteClick -> deleteIncome(action.incomeId)
         }
     }

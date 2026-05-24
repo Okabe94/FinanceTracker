@@ -13,6 +13,7 @@ data class CategoryDetailState(
     val isCurrentMonth: Boolean = true,
     val amountSpent: Long = 0L,
     val expenses: List<ExpenseUiModel> = emptyList(),
+    val recurringExpenses: List<RecurringTemplateUi> = emptyList(),
     val isLoading: Boolean = true,
     val isOverLimit: Boolean = false,
     val showDeleteConfirmDialog: Boolean = false

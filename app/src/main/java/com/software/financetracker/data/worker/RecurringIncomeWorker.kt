@@ -72,5 +72,6 @@ class RecurringIncomeWorker(
             RecurrenceType.Weekly -> date.plusDays(7)
             RecurrenceType.Biweekly -> date.plusDays(14)
             RecurrenceType.Monthly -> date.plusMonths(1)
+            is RecurrenceType.Custom -> date.plusDays(recurrenceType.intervalDays.toLong())
         }
 }

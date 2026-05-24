@@ -5,6 +5,7 @@ sealed interface CategoryDetailAction {
     data object OnEditCategoryClick : CategoryDetailAction
     data object OnAddExpenseClick : CategoryDetailAction
     data class OnExpenseClick(val expenseId: Long) : CategoryDetailAction
+    data class OnRecurringExpenseClick(val recurringExpenseId: Long) : CategoryDetailAction
     data object OnDeleteCategoryClick : CategoryDetailAction
     data object OnDeleteConfirm : CategoryDetailAction
     data object OnDeleteDismiss : CategoryDetailAction

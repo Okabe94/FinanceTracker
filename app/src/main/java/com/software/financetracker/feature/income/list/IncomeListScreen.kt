@@ -1,7 +1,16 @@
 package com.software.financetracker.feature.income.list
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -9,12 +18,24 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Repeat
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.domain.model.displayName
 import com.software.financetracker.ui.theme.Shapes
 import java.text.NumberFormat
 import java.util.Locale
@@ -25,32 +46,6 @@ fun IncomeListScreen(
     state: IncomeListState,
     onAction: (IncomeListAction) -> Unit
 ) {
-    var showAddSheet by remember { mutableStateOf(false) }
-
-    if (showAddSheet) {
-        ModalBottomSheet(onDismissRequest = { showAddSheet = false }) {
-            ListItem(
-                headlineContent = { Text("Ingreso puntual") },
-                supportingContent = { Text("Un pago o ingreso no periódico") },
-                leadingContent = { Icon(Icons.Rounded.AttachMoney, contentDescription = null) },
-                modifier = Modifier.clickable {
-                    showAddSheet = false
-                    onAction(IncomeListAction.OnAddIncomeClick)
-                }
-            )
-            ListItem(
-                headlineContent = { Text("Ingreso recurrente") },
-                supportingContent = { Text("Salario u otros ingresos fijos") },
-                leadingContent = { Icon(Icons.Rounded.Repeat, contentDescription = null) },
-                modifier = Modifier.clickable {
-                    showAddSheet = false
-                    onAction(IncomeListAction.OnAddTemplateClick)
-                }
-            )
-            Spacer(Modifier.height(16.dp))
-        }
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,7 +58,7 @@ fun IncomeListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddSheet = true }) {
+            FloatingActionButton(onClick = { onAction(IncomeListAction.OnAddIncomeClick) }) {
                 Icon(Icons.Rounded.Add, contentDescription = "Agregar ingreso")
             }
         },
@@ -75,7 +70,7 @@ fun IncomeListScreen(
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
 
-            state.items.isEmpty() -> Box(
+            state.recurringTemplates.isEmpty() && state.items.isEmpty() -> Box(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
@@ -100,24 +95,39 @@ fun IncomeListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(
-                    items = state.items,
-                    key = { item ->
-                        when (item) {
-                            is IncomeItem.Entry -> "entry_${item.id}"
-                            is IncomeItem.Template -> "template_${item.id}"
-                        }
+                if (state.recurringTemplates.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Recurrentes",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
                     }
-                ) { item ->
-                    when (item) {
-                        is IncomeItem.Entry -> IncomeEntryItem(
-                            item = item,
-                            onClick = { onAction(IncomeListAction.OnEntryClick(item.id)) },
+                    items(state.recurringTemplates, key = { "r${it.id}" }) { template ->
+                        IncomeTemplateItem(
+                            item = template,
+                            onClick = { onAction(IncomeListAction.OnTemplateClick(template.id)) },
                             modifier = Modifier.animateItem()
                         )
-                        is IncomeItem.Template -> IncomeTemplateItem(
-                            item = item,
-                            onClick = { onAction(IncomeListAction.OnTemplateClick(item.id)) },
+                    }
+                }
+                if (state.items.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Registros",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(
+                                top = if (state.recurringTemplates.isNotEmpty()) 8.dp else 0.dp,
+                                bottom = 4.dp
+                            )
+                        )
+                    }
+                    items(state.items, key = { "e${it.id}" }) { entry ->
+                        IncomeEntryItem(
+                            item = entry,
+                            onClick = { onAction(IncomeListAction.OnEntryClick(entry.id)) },
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -169,7 +179,7 @@ private fun IncomeEntryItem(
 
 @Composable
 private fun IncomeTemplateItem(
-    item: IncomeItem.Template,
+    item: RecurringIncomeTemplateUi,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -187,9 +197,16 @@ private fun IncomeTemplateItem(
                     Text(item.source, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                     Badge(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
                         Text(
-                            text = item.recurrenceLabel,
+                            text = item.recurrenceType.displayName(),
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                             style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                    if (!item.isActive) {
+                        Text(
+                            "Pausado",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

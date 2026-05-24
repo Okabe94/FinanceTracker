@@ -7,8 +7,10 @@ sealed interface HomeAction {
     data class OnCategoryClick(val categoryId: Long) : HomeAction
     data object OnAddCategoryClick : HomeAction
     data object OnMetricsClick : HomeAction
-    data object OnRecurringExpensesClick : HomeAction
+    data object OnAddExpenseClick : HomeAction
     data object OnAddIncomeClick : HomeAction
-    data object OnViewIncomeClick : HomeAction
-    data object OnGoalsClick : HomeAction
+    data object OnAddGoalClick : HomeAction
+    data object OnIncomeCardClick : HomeAction
+    data class OnGoalCardClick(val goalId: Long) : HomeAction
+    data object OnViewAllGoalsClick : HomeAction
 }

@@ -1,6 +1,7 @@
 package com.software.financetracker.feature.home
 
 import com.software.financetracker.core.util.DateUtil
+import com.software.financetracker.feature.goal.list.GoalUiModel
 
 data class CategoryUiModel(
     val id: Long,
@@ -23,5 +24,7 @@ data class HomeState(
     val isLoading: Boolean = true,
     val totalIncomeCop: Long = 0L,
     val netBalanceCop: Long = 0L,
-    val hasIncomeData: Boolean = false
+    val hasIncomeData: Boolean = false,
+    val activeGoals: List<GoalUiModel> = emptyList(),
+    val hasGoals: Boolean = false
 )

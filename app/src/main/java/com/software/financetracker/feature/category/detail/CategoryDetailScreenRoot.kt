@@ -18,10 +18,14 @@ fun CategoryDetailScreenRoot(navController: NavController) {
             CategoryDetailEvent.NavigateBack -> navController.navigateUp()
             is CategoryDetailEvent.NavigateToEditCategory ->
                 navController.navigate(CategoryFormRoute(event.categoryId))
-            is CategoryDetailEvent.NavigateToAddExpense ->
-                navController.navigate(ExpenseFormRoute(event.categoryId, null))
-            is CategoryDetailEvent.NavigateToEditExpense ->
-                navController.navigate(ExpenseFormRoute(event.categoryId, event.expenseId))
+            is CategoryDetailEvent.NavigateToExpenseForm ->
+                navController.navigate(
+                    ExpenseFormRoute(
+                        categoryId = event.categoryId,
+                        expenseId = event.expenseId,
+                        recurringExpenseId = event.recurringExpenseId
+                    )
+                )
         }
     }
 

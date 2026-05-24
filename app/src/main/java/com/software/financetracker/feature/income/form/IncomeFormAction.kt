@@ -1,5 +1,6 @@
 package com.software.financetracker.feature.income.form
 
+import com.software.financetracker.domain.model.RecurrenceType
 import com.software.financetracker.feature.income.IncomeSourceType
 
 sealed interface IncomeFormAction {
@@ -13,6 +14,10 @@ sealed interface IncomeFormAction {
     data object OnDateFieldClick : IncomeFormAction
     data class OnDateSelected(val epochMillis: Long) : IncomeFormAction
     data object OnDatePickerDismiss : IncomeFormAction
+    data object OnToggleRecurring : IncomeFormAction
+    data class OnRecurrenceTypeSelect(val type: RecurrenceType) : IncomeFormAction
+    data class OnCustomIntervalChange(val days: String) : IncomeFormAction
+    data object OnToggleActive : IncomeFormAction
     data object OnSaveClick : IncomeFormAction
     data object OnDeleteClick : IncomeFormAction
     data object OnDeleteConfirm : IncomeFormAction
