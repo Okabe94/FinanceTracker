@@ -25,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
@@ -41,6 +43,7 @@ import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.common.Fill
 import com.patrykandpatrick.vico.core.common.component.LineComponent
+import com.software.financetracker.R
 import com.software.financetracker.ui.theme.Shapes
 import java.text.NumberFormat
 import java.util.Locale
@@ -54,24 +57,24 @@ fun MetricsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Métricas") },
+                title = { Text(stringResource(R.string.metrics_title)) },
                 navigationIcon = {
                     IconButton(onClick = { onAction(MetricsAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Rounded.ArrowBack, contentDescription = stringResource(R.string.metrics_back))
                     }
                 },
                 actions = {
                     var showMenu by remember { mutableStateOf(false) }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Rounded.FileDownload, contentDescription = "Exportar")
+                            Icon(Icons.Rounded.FileDownload, contentDescription = stringResource(R.string.metrics_export))
                         }
                         DropdownMenu(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Guardar en Descargas") },
+                                text = { Text(stringResource(R.string.metrics_save_to_downloads)) },
                                 leadingIcon = { Icon(Icons.Rounded.Save, contentDescription = null) },
                                 onClick = {
                                     showMenu = false
@@ -79,7 +82,7 @@ fun MetricsScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Compartir") },
+                                text = { Text(stringResource(R.string.metrics_share)) },
                                 leadingIcon = { Icon(Icons.Rounded.Share, contentDescription = null) },
                                 onClick = {
                                     showMenu = false
@@ -110,26 +113,24 @@ fun MetricsScreen(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentPadding = PaddingValues(bottom = 32.dp)
                 ) {
-                    // Current month summary
                     item { CurrentMonthKpiCard(state) }
                     item { BurnRateCard(state) }
                     if (state.dailyAvgCop > 0L) {
-                        item { ProyeccionCard(state) }
+                        item { ProjectionCard(state) }
                     }
 
-                    // Quick stats
-                    item { SectionHeader("Variación mensual") }
+                    item { SectionHeader(stringResource(R.string.metrics_section_monthly_variation)) }
                     item { MomDeltaCard(state.momDeltaPercent, state.momDeltaLabel) }
-                    item { SectionHeader("Promedio mensual") }
+                    item { SectionHeader(stringResource(R.string.metrics_section_monthly_average)) }
                     item { AverageSpendCard(state.averageMonthlySpend) }
 
                     if (state.topCategoryName.isNotEmpty()) {
-                        item { SectionHeader("Categoría principal") }
+                        item { SectionHeader(stringResource(R.string.metrics_section_top_category)) }
                         item { TopCategoryCard(state) }
                     }
 
                     if (state.topExpenses.isNotEmpty()) {
-                        item { SectionHeader("Mayores gastos del mes") }
+                        item { SectionHeader(stringResource(R.string.metrics_section_top_expenses)) }
                         item { TopExpensesCard(state.topExpenses) }
                     }
 
@@ -137,12 +138,11 @@ fun MetricsScreen(
                         item { MejorPeorMesCard(state) }
                     }
 
-                    // Range-based charts
                     item { RangeChipRow(state.selectedRange) { onAction(MetricsAction.OnRangeSelected(it)) } }
-                    item { SectionHeader("Tendencia de gasto") }
+                    item { SectionHeader(stringResource(R.string.metrics_section_spending_trend)) }
                     item { MonthlyTotalsBarChart(state.monthlyTotals) }
 
-                    item { SectionHeader("Por categoría") }
+                    item { SectionHeader(stringResource(R.string.metrics_section_by_category)) }
                     if (state.allCategories.isNotEmpty()) {
                         item {
                             CategoryFilterChips(
@@ -168,12 +168,12 @@ fun MetricsScreen(
                     }
 
                     if (state.spendByDayOfWeek.any { it.totalCop > 0L }) {
-                        item { SectionHeader("Gasto por día de la semana") }
+                        item { SectionHeader(stringResource(R.string.metrics_section_day_of_week)) }
                         item { DayOfWeekBarChart(state.spendByDayOfWeek) }
                     }
 
                     if (state.overLimitByMonth.isNotEmpty()) {
-                        item { SectionHeader("Categorías sobre su límite") }
+                        item { SectionHeader(stringResource(R.string.metrics_section_over_limit)) }
                         state.overLimitByMonth.forEach { month ->
                             item { OverLimitMonthCard(month) }
                         }
@@ -215,13 +215,13 @@ private fun CurrentMonthKpiCard(state: MetricsState) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "$pct% del presupuesto",
+                        text = stringResource(R.string.metrics_budget_percent, pct),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (isOver) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (state.currentMonthOverLimitCount > 0) {
                         Text(
-                            text = "${state.currentMonthOverLimitCount} sobre límite",
+                            text = stringResource(R.string.metrics_over_limit_count, state.currentMonthOverLimitCount),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -244,59 +244,66 @@ private fun BurnRateCard(state: MetricsState) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     text = "${state.daysLeftInMonth}",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "días restantes",
+                    text = stringResource(R.string.metrics_days_remaining),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
             }
-            HorizontalDivider(
-                modifier = Modifier
-                    .height(40.dp)
-                    .width(1.dp)
-                    .align(Alignment.CenterVertically),
+            VerticalDivider(
+                modifier = Modifier.height(48.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
             )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     text = formatCop(state.dailyAvgCop),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "promedio diario",
+                    text = stringResource(R.string.metrics_daily_average),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
             }
             if (state.currentMonthHasLimit) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .width(1.dp)
-                        .align(Alignment.CenterVertically),
+                VerticalDivider(
+                    modifier = Modifier.height(48.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 val remaining = state.currentMonthLimitCop - state.currentMonthTotalCop
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
                         text = formatCop(remaining),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = if (remaining < 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "presupuesto restante",
+                        text = stringResource(R.string.metrics_budget_remaining),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -338,7 +345,7 @@ private fun TopCategoryCard(state: MetricsState) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${state.topCategorySharePercent}% del total del mes",
+                    text = stringResource(R.string.metrics_category_share_percent, state.topCategorySharePercent),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -436,7 +443,7 @@ private fun CategoryFilterChips(
             FilterChip(
                 selected = selectedCategoryId == null,
                 onClick = { onAction(MetricsAction.OnCategorySelected(null)) },
-                label = { Text("Todas") }
+                label = { Text(stringResource(R.string.metrics_all_categories)) }
             )
         }
         items(categories) { cat ->
@@ -547,7 +554,7 @@ private fun OverLimitMonthCard(month: OverLimitMonthUiModel) {
                             )
                         }
                         Text(
-                            text = "límite: ${formatCop(cat.limitCop)}",
+                            text = stringResource(R.string.metrics_limit_value, formatCop(cat.limitCop)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -559,7 +566,7 @@ private fun OverLimitMonthCard(month: OverLimitMonthUiModel) {
 }
 
 @Composable
-private fun ProyeccionCard(state: MetricsState) {
+private fun ProjectionCard(state: MetricsState) {
     val isOverProjected = state.currentMonthHasLimit && state.projectedMonthCop > state.currentMonthLimitCop
     ElevatedCard(
         shape = Shapes.medium,
@@ -572,7 +579,7 @@ private fun ProyeccionCard(state: MetricsState) {
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "Proyección del mes",
+                text = stringResource(R.string.metrics_month_projection),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -583,7 +590,7 @@ private fun ProyeccionCard(state: MetricsState) {
                 color = if (isOverProjected) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "si mantienes el ritmo actual",
+                text = stringResource(R.string.metrics_if_you_keep_pace),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -596,7 +603,10 @@ private fun ProyeccionCard(state: MetricsState) {
                 )
                 if (isOverProjected) {
                     Text(
-                        text = "Podrías superar el presupuesto por ${formatCop(state.projectedMonthCop - state.currentMonthLimitCop)}",
+                        text = stringResource(
+                            R.string.metrics_over_budget_by,
+                            formatCop(state.projectedMonthCop - state.currentMonthLimitCop)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -618,11 +628,15 @@ private fun MejorPeorMesCard(state: MetricsState) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = "Mejor mes",
+                    text = stringResource(R.string.metrics_best_month),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -638,16 +652,16 @@ private fun MejorPeorMesCard(state: MetricsState) {
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            HorizontalDivider(
-                modifier = Modifier
-                    .height(52.dp)
-                    .width(1.dp)
-                    .align(Alignment.CenterVertically),
+            VerticalDivider(
+                modifier = Modifier.height(52.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
             )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = "Peor mes",
+                    text = stringResource(R.string.metrics_worst_month),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -824,7 +838,7 @@ private fun MomDeltaCard(momDeltaPercent: Float?, momDeltaLabel: String) {
     ) {
         if (momDeltaPercent == null) {
             Text(
-                text = "Datos insuficientes para comparar meses",
+                text = stringResource(R.string.metrics_insufficient_data),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
@@ -851,8 +865,10 @@ private fun MomDeltaCard(momDeltaPercent: Float?, momDeltaLabel: String) {
                         color = deltaColor
                     )
                     Text(
-                        text = if (isPositive) "Gastaste más que el mes pasado"
-                               else "Gastaste menos que el mes pasado",
+                        text = stringResource(
+                            if (isPositive) R.string.metrics_spent_more_than_last_month
+                            else R.string.metrics_spent_less_than_last_month
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -880,7 +896,7 @@ private fun AverageSpendCard(average: Long) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "promedio mensual en el período",
+                text = stringResource(R.string.metrics_monthly_average_period),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -898,7 +914,7 @@ private fun ChartEmptyPlaceholder() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Sin datos para el período seleccionado",
+            text = stringResource(R.string.metrics_no_data_period),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -2,4 +2,37 @@
     <string name="app_name">FinanceTracker</string>
     <string name="shortcut_add_expense_short">Agregar gasto</string>
     <string name="shortcut_add_expense_long">Agregar nuevo gasto</string>
+
+    <!-- Metrics screen -->
+    <string name="metrics_title">Métricas</string>
+    <string name="metrics_back">Volver</string>
+    <string name="metrics_export">Exportar</string>
+    <string name="metrics_save_to_downloads">Guardar en Descargas</string>
+    <string name="metrics_share">Compartir</string>
+    <string name="metrics_budget_percent">%1$d%% del presupuesto</string>
+    <string name="metrics_over_limit_count">%1$d sobre límite</string>
+    <string name="metrics_days_remaining">días restantes</string>
+    <string name="metrics_daily_average">promedio diario</string>
+    <string name="metrics_budget_remaining">presupuesto restante</string>
+    <string name="metrics_month_projection">Proyección del mes</string>
+    <string name="metrics_if_you_keep_pace">si mantienes el ritmo actual</string>
+    <string name="metrics_over_budget_by">Podrías superar el presupuesto por %1$s</string>
+    <string name="metrics_category_share_percent">%1$d%% del total del mes</string>
+    <string name="metrics_limit_value">límite: %1$s</string>
+    <string name="metrics_all_categories">Todas</string>
+    <string name="metrics_best_month">Mejor mes</string>
+    <string name="metrics_worst_month">Peor mes</string>
+    <string name="metrics_insufficient_data">Datos insuficientes para comparar meses</string>
+    <string name="metrics_spent_more_than_last_month">Gastaste más que el mes pasado</string>
+    <string name="metrics_spent_less_than_last_month">Gastaste menos que el mes pasado</string>
+    <string name="metrics_monthly_average_period">promedio mensual en el período</string>
+    <string name="metrics_no_data_period">Sin datos para el período seleccionado</string>
+    <string name="metrics_section_monthly_variation">Variación mensual</string>
+    <string name="metrics_section_monthly_average">Promedio mensual</string>
+    <string name="metrics_section_top_category">Categoría principal</string>
+    <string name="metrics_section_top_expenses">Mayores gastos del mes</string>
+    <string name="metrics_section_spending_trend">Tendencia de gasto</string>
+    <string name="metrics_section_by_category">Por categoría</string>
+    <string name="metrics_section_day_of_week">Gasto por día de la semana</string>
+    <string name="metrics_section_over_limit">Categorías sobre su límite</string>
 </resources>

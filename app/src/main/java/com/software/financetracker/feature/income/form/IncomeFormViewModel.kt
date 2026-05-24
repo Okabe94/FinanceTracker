@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
@@ -178,7 +179,21 @@ class IncomeFormViewModel(
                     )
                 }
                 s.isRecurring -> {
-                    recurringIncomeRepository.upsert(
+                    val today = DateUtil.today()
+                    val startsToday = s.selectedDateStorage == today
+                    val initialNextDue = if (startsToday) {
+                        val d = LocalDate.parse(today)
+                        when (recurrenceType) {
+                            RecurrenceType.Daily -> d.plusDays(1)
+                            RecurrenceType.Weekly -> d.plusDays(7)
+                            RecurrenceType.Biweekly -> d.plusDays(14)
+                            RecurrenceType.Monthly -> d.plusMonths(1)
+                            is RecurrenceType.Custom -> d.plusDays(recurrenceType.intervalDays.toLong())
+                        }.toString()
+                    } else {
+                        s.selectedDateStorage
+                    }
+                    val templateResult = recurringIncomeRepository.upsert(
                         RecurringIncomeEntity(
                             id = 0L,
                             amountCop = amount,
@@ -186,10 +201,22 @@ class IncomeFormViewModel(
                             notes = s.notes.trim(),
                             recurrenceType = recurrenceType.toStorageString(),
                             startDate = s.selectedDateStorage,
-                            nextDueDate = s.selectedDateStorage,
+                            nextDueDate = initialNextDue,
                             isActive = true
                         )
                     )
+                    if (templateResult is Result.Success && startsToday) {
+                        incomeRepository.upsert(
+                            IncomeEntity(
+                                amountCop = amount,
+                                source = resolvedSource,
+                                date = s.selectedDateStorage,
+                                notes = s.notes.trim(),
+                                recurringIncomeId = templateResult.data
+                            )
+                        )
+                    }
+                    templateResult
                 }
                 else -> {
                     incomeRepository.upsert(
