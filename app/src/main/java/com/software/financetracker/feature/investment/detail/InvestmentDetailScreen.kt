@@ -32,9 +32,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -74,16 +75,17 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.software.financetracker.R
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
 
-private val benchmarkPresets = listOf(
-    "Sin comparación" to null,
-    "CDT 8%" to 8.0,
-    "Inflación 10%" to 10.0,
-    "CDT 12%" to 12.0,
-    "Personalizado" to -1.0
+private val benchmarkRates = listOf(
+    null,
+    8.0,
+    10.0,
+    12.0,
+    -1.0
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +93,7 @@ private val benchmarkPresets = listOf(
 fun InvestmentDetailScreen(
     state: InvestmentDetailState,
     onAction: (InvestmentDetailAction) -> Unit,
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -101,34 +103,43 @@ fun InvestmentDetailScreen(
                 title = { Text(state.investmentName) },
                 navigationIcon = {
                     IconButton(onClick = { onAction(InvestmentDetailAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onAction(InvestmentDetailAction.OnEditClick) }) {
-                        Icon(Icons.Rounded.Edit, contentDescription = "Editar")
+                        Icon(
+                            Icons.Rounded.Edit,
+                            contentDescription = stringResource(R.string.investment_detail_edit_cd)
+                        )
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Rounded.MoreVert, contentDescription = "Más opciones")
+                            Icon(
+                                Icons.Rounded.MoreVert,
+                                contentDescription = stringResource(R.string.investment_detail_more_cd)
+                            )
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(
-                                text = { Text("Guardar CSV") },
+                                text = { Text(stringResource(R.string.investment_detail_save_csv)) },
                                 onClick = {
                                     showMenu = false
                                     onAction(InvestmentDetailAction.SaveEntries)
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Compartir CSV") },
+                                text = { Text(stringResource(R.string.investment_detail_share_csv)) },
                                 onClick = {
                                     showMenu = false
                                     onAction(InvestmentDetailAction.ShareEntries)
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Eliminar inversión") },
+                                text = { Text(stringResource(R.string.investment_detail_delete_menu_item)) },
                                 onClick = {
                                     showMenu = false
                                     onAction(InvestmentDetailAction.OnDeleteInvestmentClick)
@@ -144,7 +155,10 @@ fun InvestmentDetailScreen(
                 onClick = { onAction(InvestmentDetailAction.OnAddEntryClick) },
                 shape = Shapes.medium
             ) {
-                Icon(Icons.Rounded.Add, contentDescription = "Agregar movimiento")
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = stringResource(R.string.investment_detail_add_entry_cd)
+                )
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -152,15 +166,24 @@ fun InvestmentDetailScreen(
     ) { innerPadding ->
         if (state.isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
             return@Scaffold
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 80.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -192,21 +215,30 @@ fun InvestmentDetailScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Valor actual · ${state.currency}",
+                                    text = stringResource(
+                                        R.string.investment_detail_current_value,
+                                        state.currency
+                                    ),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                        MetricRow("Invertido", state.totalInvestedFormatted)
                         MetricRow(
-                            label = "Retorno",
+                            stringResource(R.string.investment_detail_invested_label),
+                            state.totalInvestedFormatted
+                        )
+                        MetricRow(
+                            label = stringResource(R.string.investment_detail_return_label),
                             value = state.returnFormatted,
                             valueColor = if (state.isPositiveReturn)
                                 Color(0xFF33B679) else MaterialTheme.colorScheme.error
                         )
                         if (state.dividendsFormatted.isNotEmpty()) {
-                            MetricRow("Dividendos", state.dividendsFormatted)
+                            MetricRow(
+                                stringResource(R.string.investment_detail_dividends_label),
+                                state.dividendsFormatted
+                            )
                         }
                     }
                 }
@@ -216,7 +248,10 @@ fun InvestmentDetailScreen(
                 item {
                     ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = Shapes.medium) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Tasa fija anual", style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                stringResource(R.string.investment_detail_fixed_rate_label),
+                                style = MaterialTheme.typography.labelLarge
+                            )
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 "${String.format("%.2f", state.annualRatePercent)}% anual",
@@ -225,7 +260,7 @@ fun InvestmentDetailScreen(
                             )
                             state.maturityDateDisplay?.let {
                                 Text(
-                                    "Vence: $it",
+                                    stringResource(R.string.investment_detail_expires, it),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -255,7 +290,10 @@ fun InvestmentDetailScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Historial de valor", style = MaterialTheme.typography.labelLarge)
+                                Text(
+                                    stringResource(R.string.investment_detail_history_label),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                                 BenchmarkPickerButton(
                                     currentRate = state.benchmarkRatePercent,
                                     onAction = onAction
@@ -282,7 +320,7 @@ fun InvestmentDetailScreen(
             if (state.entries.isNotEmpty()) {
                 item {
                     Text(
-                        "Movimientos",
+                        stringResource(R.string.investment_detail_movements_label),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -318,7 +356,7 @@ fun InvestmentDetailScreen(
                             ) {
                                 Icon(
                                     Icons.Rounded.Delete,
-                                    contentDescription = "Eliminar movimiento",
+                                    contentDescription = stringResource(R.string.investment_detail_delete_entry_cd),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -338,17 +376,17 @@ fun InvestmentDetailScreen(
     if (state.showDeleteInvestmentDialog) {
         AlertDialog(
             onDismissRequest = { onAction(InvestmentDetailAction.OnDeleteInvestmentDismiss) },
-            title = { Text("Eliminar inversión") },
-            text = { Text("¿Estás seguro? Se eliminarán todos los movimientos de esta inversión.") },
+            title = { Text(stringResource(R.string.investment_detail_delete_title)) },
+            text = { Text(stringResource(R.string.investment_detail_delete_message)) },
             confirmButton = {
                 Button(
                     onClick = { onAction(InvestmentDetailAction.OnDeleteInvestmentConfirm) },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.action_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentDetailAction.OnDeleteInvestmentDismiss) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -358,31 +396,38 @@ fun InvestmentDetailScreen(
 @Composable
 private fun BenchmarkPickerButton(
     currentRate: Double?,
-    onAction: (InvestmentDetailAction) -> Unit
+    onAction: (InvestmentDetailAction) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showCustomDialog by remember { mutableStateOf(false) }
     var customRateInput by remember { mutableStateOf("") }
 
+    val noComparison = stringResource(R.string.investment_detail_benchmark_no_comparison)
+    val customLabel = stringResource(R.string.label_custom)
+    val benchmarkLabels = listOf(noComparison, "CDT 8%", "Inflación 10%", "CDT 12%", customLabel)
+
     Box {
         TextButton(onClick = { expanded = true }) {
             Text(
-                text = when (currentRate) {
-                    null -> "Comparar"
-                    8.0 -> "Ref: CDT 8%"
-                    10.0 -> "Ref: Inflación 10%"
-                    12.0 -> "Ref: CDT 12%"
-                    else -> "Ref: ${String.format("%.0f%%", currentRate)}"
-                },
+                text = if (currentRate == null) stringResource(R.string.investment_detail_benchmark_compare)
+                else stringResource(
+                    R.string.investment_detail_benchmark_ref_format,
+                    when (currentRate) {
+                        8.0 -> "CDT 8%"
+                        10.0 -> "Inflación 10%"
+                        12.0 -> "CDT 12%"
+                        else -> String.format("%.0f%%", currentRate)
+                    }
+                ),
                 style = MaterialTheme.typography.labelMedium
             )
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            benchmarkPresets.forEach { (label, rate) ->
+            benchmarkRates.forEachIndexed { index, rate ->
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = label,
+                            text = benchmarkLabels[index],
                             fontWeight = if (rate == currentRate) FontWeight.Bold else FontWeight.Normal
                         )
                     },
@@ -391,9 +436,11 @@ private fun BenchmarkPickerButton(
                         when (rate) {
                             null -> onAction(InvestmentDetailAction.OnBenchmarkRateChanged(null))
                             -1.0 -> {
-                                customRateInput = currentRate?.let { String.format("%.0f", it) } ?: ""
+                                customRateInput =
+                                    currentRate?.let { String.format("%.0f", it) } ?: ""
                                 showCustomDialog = true
                             }
+
                             else -> onAction(InvestmentDetailAction.OnBenchmarkRateChanged(rate))
                         }
                     }
@@ -405,12 +452,14 @@ private fun BenchmarkPickerButton(
     if (showCustomDialog) {
         AlertDialog(
             onDismissRequest = { showCustomDialog = false },
-            title = { Text("Tasa de referencia") },
+            title = { Text(stringResource(R.string.investment_detail_benchmark_custom_title)) },
             text = {
                 OutlinedTextField(
                     value = customRateInput,
-                    onValueChange = { customRateInput = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("% anual") },
+                    onValueChange = {
+                        customRateInput = it.filter { c -> c.isDigit() || c == '.' }
+                    },
+                    label = { Text(stringResource(R.string.investment_detail_benchmark_rate_label)) },
                     singleLine = true
                 )
             },
@@ -421,10 +470,12 @@ private fun BenchmarkPickerButton(
                         onAction(InvestmentDetailAction.OnBenchmarkRateChanged(parsed))
                     }
                     showCustomDialog = false
-                }) { Text("Aplicar") }
+                }) { Text(stringResource(R.string.investment_detail_benchmark_apply)) }
             },
             dismissButton = {
-                TextButton(onClick = { showCustomDialog = false }) { Text("Cancelar") }
+                TextButton(onClick = {
+                    showCustomDialog = false
+                }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }
@@ -454,7 +505,10 @@ private fun BenchmarkLegend(investmentName: String, benchmarkRatePercent: Double
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                "Referencia (${String.format("%.0f%%", benchmarkRatePercent)})",
+                stringResource(
+                    R.string.investment_detail_reference_legend,
+                    String.format("%.0f%%", benchmarkRatePercent)
+                ),
                 style = MaterialTheme.typography.labelSmall
             )
         }
@@ -465,21 +519,32 @@ private fun BenchmarkLegend(investmentName: String, benchmarkRatePercent: Double
 private fun MetricRow(
     label: String,
     value: String,
-    valueColor: Color = MaterialTheme.colorScheme.onSurface
+    valueColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = valueColor)
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = valueColor
+        )
     }
 }
 
 @Composable
 private fun EntryRow(entry: EntryUiModel, onClick: () -> Unit) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = Shapes.medium
     ) {
         Row(
@@ -510,7 +575,11 @@ private fun EntryRow(entry: EntryUiModel, onClick: () -> Unit) {
                     )
                 }
                 entry.amountFormatted?.let {
-                    Text(it, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
                 if (entry.notes.isNotBlank()) {
                     Text(
@@ -530,7 +599,7 @@ private fun GoalProgressCard(
     currentValueFormatted: String,
     targetValueFormatted: String,
     targetDateDisplay: String?,
-    progress: Float
+    progress: Float,
 ) {
     val isReached = progress >= 1f
     val progressColor = if (isReached) Color(0xFF33B679) else MaterialTheme.colorScheme.primary
@@ -539,7 +608,10 @@ private fun GoalProgressCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("META", style = MaterialTheme.typography.labelLarge)
+            Text(
+                stringResource(R.string.investment_detail_goal_section),
+                style = MaterialTheme.typography.labelLarge
+            )
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth(),
@@ -548,15 +620,26 @@ private fun GoalProgressCard(
             )
             if (isReached) {
                 Text(
-                    "Meta alcanzada ✓",
+                    stringResource(R.string.investment_detail_goal_reached),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF33B679),
                     fontWeight = FontWeight.SemiBold
                 )
             } else {
-                MetricRow("Actual", currentValueFormatted)
-                MetricRow("Meta", targetValueFormatted)
-                targetDateDisplay?.let { MetricRow("Fecha objetivo", it) }
+                MetricRow(
+                    stringResource(R.string.investment_detail_goal_actual_label),
+                    currentValueFormatted
+                )
+                MetricRow(
+                    stringResource(R.string.investment_detail_goal_target_label),
+                    targetValueFormatted
+                )
+                targetDateDisplay?.let {
+                    MetricRow(
+                        stringResource(R.string.investment_detail_goal_date_label),
+                        it
+                    )
+                }
                 Text(
                     "${String.format("%.0f%%", progress * 100f)} alcanzado",
                     style = MaterialTheme.typography.labelSmall,
@@ -571,7 +654,7 @@ private fun GoalProgressCard(
 private fun ValueLineChart(
     snapshots: List<SnapshotPoint>,
     currency: String,
-    benchmarkData: List<Float> = emptyList()
+    benchmarkData: List<Float> = emptyList(),
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 

@@ -3,6 +3,252 @@
     <string name="shortcut_add_expense_short">Agregar gasto</string>
     <string name="shortcut_add_expense_long">Agregar nuevo gasto</string>
 
+    <!-- Common actions -->
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_add">Agregar</string>
+    <string name="action_ok">OK</string>
+    <string name="action_confirm">Aceptar</string>
+    <string name="action_apply">Aplicar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_update">Actualizar</string>
+    <string name="action_saving">Guardando…</string>
+
+    <!-- Common content descriptions -->
+    <string name="cd_back">Volver</string>
+    <string name="cd_select_date">Seleccionar fecha</string>
+    <string name="cd_edit">Editar</string>
+
+    <!-- Common labels -->
+    <string name="label_recurring">Recurrentes</string>
+    <string name="label_paused">Pausado</string>
+    <string name="label_next_due">Próximo: %1$s</string>
+    <string name="label_active">Activo</string>
+    <string name="label_pause_hint">Desactivar para pausar sin eliminar</string>
+    <string name="label_repeats">¿Se repite?</string>
+    <string name="label_custom">Personalizado</string>
+    <string name="label_every_n_days">Cada N días</string>
+    <string name="label_color">Color</string>
+    <string name="label_icon">Ícono</string>
+    <string name="label_amount_cop">Monto (COP)</string>
+    <string name="label_description_optional">Descripción (opcional)</string>
+    <string name="label_date">Fecha</string>
+    <string name="label_start_date">Fecha de inicio</string>
+    <string name="label_name">Nombre</string>
+    <string name="label_notes_optional">Notas (opcional)</string>
+    <string name="label_category">Categoría</string>
+    <string name="label_select_category">Seleccionar categoría</string>
+    <string name="label_over_limit">Límite superado</string>
+    <string name="label_frequency">Frecuencia</string>
+    <string name="error_select_category">Selecciona una categoría</string>
+
+    <!-- MonthSelector -->
+    <string name="month_selector_previous">Mes anterior</string>
+    <string name="month_selector_next">Mes siguiente</string>
+    <string name="month_selector_go_today">Ir a hoy</string>
+
+    <!-- FinanceTrackerFab -->
+    <string name="fab_add_cd">Agregar</string>
+
+    <!-- Home screen -->
+    <string name="home_fab_metrics_cd">Ver métricas</string>
+    <string name="home_fab_new_category">Nueva categoría</string>
+    <string name="home_fab_new_expense">Nuevo gasto</string>
+    <string name="home_fab_new_income">Nuevo ingreso</string>
+    <string name="home_fab_new_goal">Nueva meta</string>
+    <string name="home_empty_message">Crea tu primera categoría</string>
+    <string name="home_goals_title">Metas activas</string>
+    <string name="home_goals_view_all">Ver todas (%1$d)</string>
+    <string name="home_goal_target_amount">Meta: %1$s</string>
+    <string name="home_goal_deadline">Vence: %1$s</string>
+
+    <!-- SummaryCard -->
+    <string name="summary_card_title">Gastado este mes</string>
+    <string name="summary_card_over_limit">Límite superado  /  límite %1$s</string>
+    <string name="summary_card_available">%1$s disponible  /  límite %2$s</string>
+
+    <!-- IncomeCard -->
+    <string name="income_card_income_title">Ingresos este mes</string>
+    <string name="income_card_balance_title">Balance neto</string>
+
+    <!-- CategoryCard -->
+    <string name="category_card_no_limit">Sin límite</string>
+
+    <!-- CategoryDetail screen -->
+    <string name="category_detail_edit_cd">Editar categoría</string>
+    <string name="category_detail_delete_cd">Eliminar categoría</string>
+    <string name="category_detail_no_expenses">Sin gastos este mes</string>
+    <string name="category_detail_section_this_month">Este mes</string>
+    <string name="category_detail_auto_generated_cd">Generado automáticamente</string>
+    <string name="category_detail_delete_title">Eliminar categoría</string>
+    <string name="category_detail_delete_message">¿Eliminar \"%1$s\" y todos sus gastos? Esta acción no se puede deshacer.</string>
+    <string name="category_detail_of_amount">de %1$s</string>
+
+    <!-- CategoryForm screen -->
+    <string name="category_form_title_new">Nueva categoría</string>
+    <string name="category_form_title_edit">Editar categoría</string>
+    <string name="category_form_monthly_limit_label">Límite mensual</string>
+    <string name="category_form_amount_cop_label">Monto en COP</string>
+
+    <!-- ExpenseForm screen -->
+    <string name="expense_form_title_new">Nuevo gasto</string>
+    <string name="expense_form_title_edit">Editar gasto</string>
+    <string name="expense_form_title_edit_recurring">Editar recurrente</string>
+    <string name="expense_form_delete_title">Eliminar gasto</string>
+    <string name="expense_form_delete_recurring_title">Eliminar gasto recurrente</string>
+    <string name="expense_form_delete_message">¿Eliminar este gasto? Esta acción no se puede deshacer.</string>
+    <string name="expense_form_delete_recurring_message">¿Eliminar esta plantilla recurrente? Los gastos ya generados no se eliminarán.</string>
+
+    <!-- IncomeForm screen -->
+    <string name="income_form_title_new">Nuevo ingreso</string>
+    <string name="income_form_title_edit">Editar ingreso</string>
+    <string name="income_form_title_edit_recurring">Editar ingreso recurrente</string>
+    <string name="income_form_type_label">Tipo de ingreso</string>
+    <string name="income_form_custom_source_label">Especifica la fuente</string>
+    <string name="income_form_delete_title">Eliminar ingreso</string>
+    <string name="income_form_delete_recurring_title">Eliminar ingreso recurrente</string>
+    <string name="income_form_delete_message">¿Estás seguro de que deseas eliminar este ingreso?</string>
+    <string name="income_form_delete_recurring_message">¿Eliminar esta plantilla recurrente? Los ingresos ya generados no se eliminarán.</string>
+
+    <!-- IncomeList screen -->
+    <string name="income_list_title">Ingresos</string>
+    <string name="income_list_add_cd">Agregar ingreso</string>
+    <string name="income_list_section_entries">Registros</string>
+    <string name="income_list_empty_title">Sin ingresos registrados</string>
+    <string name="income_list_empty_hint">Toca + para agregar uno</string>
+    <string name="income_list_item_recurring_chip">Recurrente</string>
+
+    <!-- InvestmentDetail screen -->
+    <string name="investment_detail_edit_cd">Editar</string>
+    <string name="investment_detail_more_cd">Más opciones</string>
+    <string name="investment_detail_add_entry_cd">Agregar movimiento</string>
+    <string name="investment_detail_delete_entry_cd">Eliminar movimiento</string>
+    <string name="investment_detail_current_value">Valor actual · %1$s</string>
+    <string name="investment_detail_save_csv">Guardar CSV</string>
+    <string name="investment_detail_share_csv">Compartir CSV</string>
+    <string name="investment_detail_delete_menu_item">Eliminar inversión</string>
+    <string name="investment_detail_invested_label">Invertido</string>
+    <string name="investment_detail_return_label">Retorno</string>
+    <string name="investment_detail_dividends_label">Dividendos</string>
+    <string name="investment_detail_fixed_rate_label">Tasa fija anual</string>
+    <string name="investment_detail_expires">Vence: %1$s</string>
+    <string name="investment_detail_history_label">Historial de valor</string>
+    <string name="investment_detail_movements_label">Movimientos</string>
+    <string name="investment_detail_delete_title">Eliminar inversión</string>
+    <string name="investment_detail_delete_message">¿Estás seguro? Se eliminarán todos los movimientos de esta inversión.</string>
+    <string name="investment_detail_goal_section">META</string>
+    <string name="investment_detail_goal_reached">Meta alcanzada ✓</string>
+    <string name="investment_detail_goal_actual_label">Actual</string>
+    <string name="investment_detail_goal_target_label">Meta</string>
+    <string name="investment_detail_goal_date_label">Fecha objetivo</string>
+    <string name="investment_detail_benchmark_compare">Comparar</string>
+    <string name="investment_detail_benchmark_ref_format">Ref: %1$s</string>
+    <string name="investment_detail_benchmark_no_comparison">Sin comparación</string>
+    <string name="investment_detail_benchmark_custom_title">Tasa de referencia</string>
+    <string name="investment_detail_benchmark_rate_label">% anual</string>
+    <string name="investment_detail_benchmark_apply">Aplicar</string>
+    <string name="investment_detail_reference_legend">Referencia (%1$s)</string>
+
+    <!-- InvestmentForm screen -->
+    <string name="investment_form_title_new">Nueva inversión</string>
+    <string name="investment_form_title_edit">Editar inversión</string>
+    <string name="investment_form_currency_label">Moneda</string>
+    <string name="investment_form_fixed_roi_label">Tasa de retorno fija</string>
+    <string name="investment_form_annual_rate_label">Tasa anual (%)</string>
+    <string name="investment_form_maturity_date_label">Fecha de vencimiento (opcional)</string>
+    <string name="investment_form_target_value_label">Meta de valor</string>
+    <string name="investment_form_target_value_input">Valor objetivo</string>
+    <string name="investment_form_target_date_label">Fecha objetivo (opcional)</string>
+    <string name="investment_form_delete_title">Eliminar inversión</string>
+
+    <!-- InvestmentList screen -->
+    <string name="investment_list_title">Inversiones</string>
+    <string name="investment_list_rates_cd">Tasas de cambio</string>
+    <string name="investment_list_new_cd">Nueva inversión</string>
+    <string name="investment_list_empty_title">Sin inversiones</string>
+    <string name="investment_list_empty_message">Agrega tu primera inversión para comenzar a rastrear tu portafolio.</string>
+    <string name="investment_list_add_button">Agregar inversión</string>
+    <string name="investment_list_distribution">Distribución</string>
+    <string name="investment_list_portfolio">PORTAFOLIO</string>
+    <string name="investment_list_invested_label">Invertido</string>
+    <string name="investment_list_return_label">Retorno</string>
+    <string name="investment_list_cop_only_note">* solo inversiones en COP</string>
+    <string name="investment_list_rates_title">Tasas de cambio</string>
+    <string name="investment_list_rates_updated_at">Actualizada: %1$s</string>
+    <string name="investment_list_rates_no_data">Sin datos. Toca Actualizar para obtener tasas.</string>
+    <string name="investment_list_search_placeholder">Buscar inversión…</string>
+    <string name="investment_list_empty_search">Sin resultados</string>
+
+    <!-- InvestmentEntryForm screen -->
+    <string name="investment_entry_title_new">Nuevo movimiento</string>
+    <string name="investment_entry_title_edit">Editar movimiento</string>
+    <string name="investment_entry_type_label">Tipo de movimiento</string>
+    <string name="investment_entry_amount_label">Monto</string>
+    <string name="investment_entry_delete_title">Eliminar movimiento</string>
+    <string name="investment_entry_delete_message">¿Eliminar este movimiento?</string>
+
+    <!-- GoalList screen -->
+    <string name="goal_list_title">Metas de ahorro</string>
+    <string name="goal_list_add_cd">Nueva meta</string>
+    <string name="goal_list_empty_title">Sin metas de ahorro</string>
+    <string name="goal_list_empty_hint">Toca + para crear una meta</string>
+    <string name="goal_list_section_active">Activas</string>
+    <string name="goal_list_section_achieved">Logradas</string>
+    <string name="goal_list_item_overdue">Vencida</string>
+    <string name="goal_list_item_required_monthly">Necesitas %1$s/mes</string>
+    <string name="goal_list_item_achieved">Meta lograda</string>
+    <string name="goal_list_item_deadline">Plazo: %1$s</string>
+
+    <!-- GoalForm screen -->
+    <string name="goal_form_title_new">Nueva meta</string>
+    <string name="goal_form_title_edit">Editar meta</string>
+    <string name="goal_form_name_label">Nombre de la meta</string>
+    <string name="goal_form_name_placeholder">Ej: Vacaciones, Fondo de emergencia…</string>
+    <string name="goal_form_name_error">Ingresa un nombre para la meta</string>
+    <string name="goal_form_target_amount_label">Monto objetivo (COP)</string>
+    <string name="goal_form_date_label">Fecha límite</string>
+    <string name="goal_form_delete_title">Eliminar meta</string>
+    <string name="goal_form_delete_message">¿Estás seguro de que deseas eliminar esta meta?</string>
+
+    <!-- GoalDetail screen -->
+    <string name="goal_detail_contribution_dialog_title">Agregar aporte</string>
+    <string name="goal_detail_contribution_confirm">Agregar</string>
+    <string name="goal_detail_progress_label">Progreso</string>
+    <string name="goal_detail_section_details">Detalles</string>
+    <string name="goal_detail_remaining_label">Falta</string>
+    <string name="goal_detail_deadline_label">Fecha límite</string>
+    <string name="goal_detail_monthly_savings_label">Ahorro mensual requerido</string>
+    <string name="goal_detail_overdue_message">Esta meta está vencida</string>
+    <string name="goal_detail_add_contribution">Agregar aporte</string>
+    <string name="goal_detail_mark_achieved">Marcar como lograda</string>
+
+    <!-- AssistantExpense screen -->
+    <string name="assistant_expense_title">Registrar gasto</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_section_appearance">Apariencia</string>
+    <string name="settings_theme_label">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_section_currency">Moneda</string>
+    <string name="settings_currency_label">Moneda predeterminada</string>
+    <string name="settings_currency_hint">Usada al crear nuevas inversiones</string>
+    <string name="settings_section_exchange_rates">Tasas de cambio</string>
+    <string name="settings_custom_rates_label">Usar tasas propias</string>
+    <string name="settings_custom_rates_desc">Desactiva la consulta automática a la API y permite ingresar tus propias tasas</string>
+    <string name="settings_usd_rate_label">USD → COP</string>
+    <string name="settings_eur_rate_label">EUR → COP</string>
+    <string name="settings_gbp_rate_label">GBP → COP</string>
+    <string name="settings_save_rates_button">Guardar tasas</string>
+    <string name="settings_saving_rates_button">Guardando…</string>
+    <string name="settings_section_notifications">Notificaciones</string>
+    <string name="settings_notifications_label">Habilitar notificaciones</string>
+    <string name="settings_notifications_desc">Alertas de presupuesto cuando superas o te acercas al límite de una categoría</string>
+
     <!-- Metrics screen -->
     <string name="metrics_title">Métricas</string>
     <string name="metrics_back">Volver</string>

@@ -13,8 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/schemas/com.software.financetracker.data.local.FinanceDatabase/1.json
-/app/schemas/com.software.financetracker.data.local.FinanceDatabase/2.json
 /app/release/app-release.apk
 /app/release/baselineProfiles/0/app-release.dm
 /app/release/baselineProfiles/1/app-release.dm

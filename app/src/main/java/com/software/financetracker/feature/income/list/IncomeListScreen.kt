@@ -33,8 +33,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.domain.model.displayName
 import com.software.financetracker.ui.theme.Shapes
 import java.text.NumberFormat
@@ -44,34 +46,44 @@ import java.util.Locale
 @Composable
 fun IncomeListScreen(
     state: IncomeListState,
-    onAction: (IncomeListAction) -> Unit
+    onAction: (IncomeListAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ingresos") },
+                title = { Text(stringResource(R.string.income_list_title)) },
                 navigationIcon = {
                     IconButton(onClick = { onAction(IncomeListAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { onAction(IncomeListAction.OnAddIncomeClick) }) {
-                Icon(Icons.Rounded.Add, contentDescription = "Agregar ingreso")
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = stringResource(R.string.income_list_add_cd)
+                )
             }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         when {
             state.isLoading -> Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
 
             state.recurringTemplates.isEmpty() && state.items.isEmpty() -> Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -84,21 +96,29 @@ fun IncomeListScreen(
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text("Sin ingresos registrados", style = MaterialTheme.typography.titleMedium)
-                    Text("Toca + para agregar uno", style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        stringResource(R.string.income_list_empty_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        stringResource(R.string.income_list_empty_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
             else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (state.recurringTemplates.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Recurrentes",
+                            text = stringResource(R.string.label_recurring),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -115,7 +135,7 @@ fun IncomeListScreen(
                 if (state.items.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Registros",
+                            text = stringResource(R.string.income_list_section_entries),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(
@@ -141,7 +161,7 @@ fun IncomeListScreen(
 private fun IncomeEntryItem(
     item: IncomeItem.Entry,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(onClick = onClick, shape = Shapes.medium, modifier = modifier.fillMaxWidth()) {
         Row(
@@ -150,19 +170,38 @@ private fun IncomeEntryItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(item.source, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                Text(item.displayDate, style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    item.source,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    item.displayDate, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 if (item.notes.isNotBlank()) {
-                    Text(item.notes, style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        item.notes, style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 if (item.isFromTemplate) {
                     Spacer(Modifier.height(4.dp))
                     SuggestionChip(
                         onClick = {},
-                        label = { Text("Recurrente", style = MaterialTheme.typography.labelSmall) },
-                        icon = { Icon(Icons.Rounded.Repeat, contentDescription = null, modifier = Modifier.size(14.dp)) },
+                        label = {
+                            Text(
+                                stringResource(R.string.income_list_item_recurring_chip),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
+                        icon = {
+                            Icon(
+                                Icons.Rounded.Repeat,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        },
                         modifier = Modifier.height(24.dp)
                     )
                 }
@@ -181,7 +220,7 @@ private fun IncomeEntryItem(
 private fun IncomeTemplateItem(
     item: RecurringIncomeTemplateUi,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(onClick = onClick, shape = Shapes.medium, modifier = modifier.fillMaxWidth()) {
         Row(
@@ -194,7 +233,11 @@ private fun IncomeTemplateItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(item.source, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        item.source,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
                     Badge(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
                         Text(
                             text = item.recurrenceType.displayName(),
@@ -204,14 +247,14 @@ private fun IncomeTemplateItem(
                     }
                     if (!item.isActive) {
                         Text(
-                            "Pausado",
+                            stringResource(R.string.label_paused),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 Text(
-                    "Próximo: ${item.displayNextDueDate}",
+                    stringResource(R.string.label_next_due, item.displayNextDueDate),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

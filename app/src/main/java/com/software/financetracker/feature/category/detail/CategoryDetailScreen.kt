@@ -24,10 +24,8 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -43,8 +41,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.domain.model.displayName
 import com.software.financetracker.ui.components.FinanceTrackerFab
 import com.software.financetracker.ui.components.MonthSelector
@@ -56,7 +56,7 @@ import java.util.Locale
 @Composable
 fun CategoryDetailScreen(
     state: CategoryDetailState,
-    onAction: (CategoryDetailAction) -> Unit
+    onAction: (CategoryDetailAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -64,15 +64,24 @@ fun CategoryDetailScreen(
                 title = { Text(state.categoryName) },
                 navigationIcon = {
                     IconButton(onClick = { onAction(CategoryDetailAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onAction(CategoryDetailAction.OnEditCategoryClick) }) {
-                        Icon(Icons.Rounded.Edit, contentDescription = "Editar categoría")
+                        Icon(
+                            Icons.Rounded.Edit,
+                            contentDescription = stringResource(R.string.category_detail_edit_cd)
+                        )
                     }
                     IconButton(onClick = { onAction(CategoryDetailAction.OnDeleteCategoryClick) }) {
-                        Icon(Icons.Rounded.Delete, contentDescription = "Eliminar categoría")
+                        Icon(
+                            Icons.Rounded.Delete,
+                            contentDescription = stringResource(R.string.category_detail_delete_cd)
+                        )
                     }
                 }
             )
@@ -85,16 +94,26 @@ fun CategoryDetailScreen(
         if (state.showDeleteConfirmDialog) {
             AlertDialog(
                 onDismissRequest = { onAction(CategoryDetailAction.OnDeleteDismiss) },
-                title = { Text("Eliminar categoría") },
-                text = { Text("¿Eliminar \"${state.categoryName}\" y todos sus gastos? Esta acción no se puede deshacer.") },
+                title = { Text(stringResource(R.string.category_detail_delete_title)) },
+                text = {
+                    Text(
+                        stringResource(
+                            R.string.category_detail_delete_message,
+                            state.categoryName
+                        )
+                    )
+                },
                 confirmButton = {
                     TextButton(onClick = { onAction(CategoryDetailAction.OnDeleteConfirm) }) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                        Text(
+                            stringResource(R.string.action_delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { onAction(CategoryDetailAction.OnDeleteDismiss) }) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 }
             )
@@ -127,7 +146,10 @@ fun CategoryDetailScreen(
                     )
                     if (state.monthlyLimitCop != null) {
                         Text(
-                            text = "de ${formatCop(state.monthlyLimitCop)}",
+                            text = stringResource(
+                                R.string.category_detail_of_amount,
+                                formatCop(state.monthlyLimitCop)
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.7f)
                         )
@@ -135,7 +157,7 @@ fun CategoryDetailScreen(
                             .coerceIn(0f, 1f)
                         val progressColor by animateColorAsState(
                             targetValue = if (state.isOverLimit) MaterialTheme.colorScheme.error
-                                          else MaterialTheme.colorScheme.primary,
+                            else MaterialTheme.colorScheme.primary,
                             animationSpec = tween(durationMillis = 500),
                             label = "progressColor"
                         )
@@ -143,11 +165,13 @@ fun CategoryDetailScreen(
                             progress = { progress },
                             color = progressColor,
                             trackColor = Color.White.copy(alpha = 0.3f),
-                            modifier = Modifier.fillMaxWidth().clip(CircleShape)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(CircleShape)
                         )
                         if (state.isOverLimit) {
                             Text(
-                                text = "Límite superado",
+                                text = stringResource(R.string.label_over_limit),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -166,7 +190,7 @@ fun CategoryDetailScreen(
                 targetState = contentState,
                 transitionSpec = {
                     fadeIn(animationSpec = tween(durationMillis = 300)) togetherWith
-                        fadeOut(animationSpec = tween(durationMillis = 150))
+                            fadeOut(animationSpec = tween(durationMillis = 150))
                 },
                 label = "categoryDetailContent"
             ) { target ->
@@ -174,13 +198,15 @@ fun CategoryDetailScreen(
                     0 -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                         androidx.compose.material3.CircularProgressIndicator()
                     }
+
                     1 -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                         Text(
-                            text = "Sin gastos este mes",
+                            text = stringResource(R.string.category_detail_no_expenses),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+
                     else -> LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
@@ -189,7 +215,7 @@ fun CategoryDetailScreen(
                         if (state.recurringExpenses.isNotEmpty()) {
                             item {
                                 Text(
-                                    text = "Recurrentes",
+                                    text = stringResource(R.string.label_recurring),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 4.dp)
@@ -198,7 +224,13 @@ fun CategoryDetailScreen(
                             items(state.recurringExpenses, key = { "r${it.id}" }) { template ->
                                 RecurringTemplateListItem(
                                     template = template,
-                                    onClick = { onAction(CategoryDetailAction.OnRecurringExpenseClick(template.id)) },
+                                    onClick = {
+                                        onAction(
+                                            CategoryDetailAction.OnRecurringExpenseClick(
+                                                template.id
+                                            )
+                                        )
+                                    },
                                     modifier = Modifier.animateItem()
                                 )
                             }
@@ -206,10 +238,13 @@ fun CategoryDetailScreen(
                         if (state.expenses.isNotEmpty()) {
                             item {
                                 Text(
-                                    text = "Este mes",
+                                    text = stringResource(R.string.category_detail_section_this_month),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(top = if (state.recurringExpenses.isNotEmpty()) 8.dp else 0.dp, bottom = 4.dp)
+                                    modifier = Modifier.padding(
+                                        top = if (state.recurringExpenses.isNotEmpty()) 8.dp else 0.dp,
+                                        bottom = 4.dp
+                                    )
                                 )
                             }
                             items(state.expenses, key = { it.id }) { expense ->
@@ -231,7 +266,7 @@ fun CategoryDetailScreen(
 private fun RecurringTemplateListItem(
     template: RecurringTemplateUi,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         onClick = onClick,
@@ -261,7 +296,7 @@ private fun RecurringTemplateListItem(
                     )
                     if (!template.isActive) {
                         Text(
-                            "Pausado",
+                            stringResource(R.string.label_paused),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -271,7 +306,7 @@ private fun RecurringTemplateListItem(
                     Text(template.description, style = MaterialTheme.typography.bodyMedium)
                 }
                 Text(
-                    text = "Próximo: ${template.displayNextDueDate}",
+                    text = stringResource(R.string.label_next_due, template.displayNextDueDate),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -289,7 +324,7 @@ private fun RecurringTemplateListItem(
 private fun ExpenseListItem(
     expense: ExpenseUiModel,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         onClick = onClick,
@@ -309,7 +344,7 @@ private fun ExpenseListItem(
                     if (expense.isAutoGenerated) {
                         Icon(
                             Icons.Rounded.Repeat,
-                            contentDescription = "Generado automáticamente",
+                            contentDescription = stringResource(R.string.category_detail_auto_generated_cd),
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )

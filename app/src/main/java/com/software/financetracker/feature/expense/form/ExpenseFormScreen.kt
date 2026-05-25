@@ -54,9 +54,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.presentation.CopVisualTransformation
 import com.software.financetracker.domain.model.RecurrenceType
 import com.software.financetracker.domain.model.displayName
@@ -69,13 +71,13 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ExpenseFormScreen(
     state: ExpenseFormState,
-    onAction: (ExpenseFormAction) -> Unit
+    onAction: (ExpenseFormAction) -> Unit,
 ) {
     val isEditingRecurring = state.recurringExpenseId != null
     val isEditing = state.expenseId != null || isEditingRecurring
     val showCategoryPicker = state.categoryId == null || state.categories.isNotEmpty()
     val selectedCategoryName = state.categories.firstOrNull { it.id == state.categoryId }?.name
-        ?: "Seleccionar categoría"
+        ?: stringResource(R.string.label_select_category)
 
     val recurrenceTypes = listOf(
         RecurrenceType.Daily,
@@ -91,27 +93,33 @@ fun ExpenseFormScreen(
                 title = {
                     Text(
                         when {
-                            isEditingRecurring -> "Editar recurrente"
-                            state.expenseId != null -> "Editar gasto"
-                            else -> "Nuevo gasto"
+                            isEditingRecurring -> stringResource(R.string.expense_form_title_edit_recurring)
+                            state.expenseId != null -> stringResource(R.string.expense_form_title_edit)
+                            else -> stringResource(R.string.expense_form_title_new)
                         }
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { onAction(ExpenseFormAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     AnimatedVisibility(
                         visible = isEditing,
                         enter = fadeIn(animationSpec = tween(200)) +
-                            scaleIn(initialScale = 0.8f, animationSpec = tween(200)),
+                                scaleIn(initialScale = 0.8f, animationSpec = tween(200)),
                         exit = fadeOut(animationSpec = tween(150)) +
-                            scaleOut(targetScale = 0.8f, animationSpec = tween(150))
+                                scaleOut(targetScale = 0.8f, animationSpec = tween(150))
                     ) {
                         IconButton(onClick = { onAction(ExpenseFormAction.OnDeleteClick) }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "Eliminar")
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.action_delete)
+                            )
                         }
                     }
                 }
@@ -132,11 +140,11 @@ fun ExpenseFormScreen(
                     OutlinedTextField(
                         value = selectedCategoryName,
                         onValueChange = {},
-                        label = { Text("Categoría") },
+                        label = { Text(stringResource(R.string.label_category)) },
                         readOnly = true,
                         isError = state.categoryError,
                         supportingText = if (state.categoryError) {
-                            { Text("Selecciona una categoría") }
+                            { Text(stringResource(R.string.error_select_category)) }
                         } else null,
                         leadingIcon = {
                             if (selectedCat != null) {
@@ -166,7 +174,7 @@ fun ExpenseFormScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             disabledTextColor = MaterialTheme.colorScheme.onSurface,
                             disabledBorderColor = if (state.categoryError) MaterialTheme.colorScheme.error
-                                                  else MaterialTheme.colorScheme.outline,
+                            else MaterialTheme.colorScheme.outline,
                             disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -206,7 +214,7 @@ fun ExpenseFormScreen(
                                         text = cat.name,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = if (cat.id == state.categoryId) FontWeight.SemiBold
-                                                     else FontWeight.Normal
+                                        else FontWeight.Normal
                                     )
                                 },
                                 trailingIcon = {
@@ -214,7 +222,7 @@ fun ExpenseFormScreen(
                                         imageVector = Icons.Rounded.Check,
                                         contentDescription = null,
                                         tint = if (cat.id == state.categoryId) MaterialTheme.colorScheme.primary
-                                               else Color.Transparent,
+                                        else Color.Transparent,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 },
@@ -231,7 +239,7 @@ fun ExpenseFormScreen(
             OutlinedTextField(
                 value = state.amountInput,
                 onValueChange = { onAction(ExpenseFormAction.OnAmountChange(it.filter { c -> c.isDigit() })) },
-                label = { Text("Monto (COP)") },
+                label = { Text(stringResource(R.string.label_amount_cop)) },
                 prefix = { Text("$ ") },
                 isError = state.amountError != null,
                 supportingText = { state.amountError?.let { Text(it.asString()) } },
@@ -244,7 +252,7 @@ fun ExpenseFormScreen(
             OutlinedTextField(
                 value = state.description,
                 onValueChange = { onAction(ExpenseFormAction.OnDescriptionChange(it)) },
-                label = { Text("Descripción (opcional)") },
+                label = { Text(stringResource(R.string.label_description_optional)) },
                 maxLines = 3,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -257,10 +265,19 @@ fun ExpenseFormScreen(
                 OutlinedTextField(
                     value = state.displayDate,
                     onValueChange = {},
-                    label = { Text(if (state.isRecurring) "Fecha de inicio" else "Fecha") },
+                    label = {
+                        Text(
+                            if (state.isRecurring) stringResource(R.string.label_start_date) else stringResource(
+                                R.string.label_date
+                            )
+                        )
+                    },
                     readOnly = true,
                     trailingIcon = {
-                        Icon(Icons.Rounded.CalendarToday, contentDescription = "Seleccionar fecha")
+                        Icon(
+                            Icons.Rounded.CalendarToday,
+                            contentDescription = stringResource(R.string.cd_select_date)
+                        )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
@@ -279,7 +296,10 @@ fun ExpenseFormScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("¿Se repite?", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(R.string.label_repeats),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                     Switch(
                         checked = state.isRecurring,
                         onCheckedChange = { onAction(ExpenseFormAction.OnToggleRecurring) }
@@ -288,7 +308,10 @@ fun ExpenseFormScreen(
             }
 
             if (state.isRecurring) {
-                Text("Frecuencia", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    stringResource(R.string.label_frequency),
+                    style = MaterialTheme.typography.labelLarge
+                )
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         recurrenceTypes.filterNot { it is RecurrenceType.Custom }.forEach { type ->
@@ -305,7 +328,7 @@ fun ExpenseFormScreen(
                         FilterChip(
                             selected = state.recurrenceType is RecurrenceType.Custom,
                             onClick = { onAction(ExpenseFormAction.OnRecurrenceTypeSelect(customType)) },
-                            label = { Text("Personalizado") }
+                            label = { Text(stringResource(R.string.label_custom)) }
                         )
                     }
                 }
@@ -314,7 +337,7 @@ fun ExpenseFormScreen(
                     OutlinedTextField(
                         value = state.customIntervalDays.toString(),
                         onValueChange = { onAction(ExpenseFormAction.OnCustomIntervalChange(it.filter { c -> c.isDigit() })) },
-                        label = { Text("Cada N días") },
+                        label = { Text(stringResource(R.string.label_every_n_days)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -329,9 +352,12 @@ fun ExpenseFormScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("Activo", style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            text = "Desactivar para pausar sin eliminar",
+                            stringResource(R.string.label_active),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = stringResource(R.string.label_pause_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -344,23 +370,29 @@ fun ExpenseFormScreen(
             }
 
             if (state.showDeleteConfirmDialog) {
-                val dialogTitle = if (isEditingRecurring) "Eliminar gasto recurrente" else "Eliminar gasto"
+                val dialogTitle =
+                    if (isEditingRecurring) stringResource(R.string.expense_form_delete_recurring_title) else stringResource(
+                        R.string.expense_form_delete_title
+                    )
                 val dialogText = if (isEditingRecurring)
-                    "¿Eliminar esta plantilla recurrente? Los gastos ya generados no se eliminarán."
+                    stringResource(R.string.expense_form_delete_recurring_message)
                 else
-                    "¿Eliminar este gasto? Esta acción no se puede deshacer."
+                    stringResource(R.string.expense_form_delete_message)
                 AlertDialog(
                     onDismissRequest = { onAction(ExpenseFormAction.OnDeleteDismiss) },
                     title = { Text(dialogTitle) },
                     text = { Text(dialogText) },
                     confirmButton = {
                         TextButton(onClick = { onAction(ExpenseFormAction.OnDeleteConfirm) }) {
-                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                            Text(
+                                stringResource(R.string.action_delete),
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { onAction(ExpenseFormAction.OnDeleteDismiss) }) {
-                            Text("Cancelar")
+                            Text(stringResource(R.string.action_cancel))
                         }
                     }
                 )
@@ -383,11 +415,11 @@ fun ExpenseFormScreen(
                                     onAction(ExpenseFormAction.OnDateSelected(it))
                                 }
                             }
-                        ) { Text("OK") }
+                        ) { Text(stringResource(R.string.action_ok)) }
                     },
                     dismissButton = {
                         TextButton(onClick = { onAction(ExpenseFormAction.OnDatePickerDismiss) }) {
-                            Text("Cancelar")
+                            Text(stringResource(R.string.action_cancel))
                         }
                     }
                 ) {
@@ -413,7 +445,7 @@ fun ExpenseFormScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Guardar")
+                    Text(stringResource(R.string.action_save))
                 }
             }
         }

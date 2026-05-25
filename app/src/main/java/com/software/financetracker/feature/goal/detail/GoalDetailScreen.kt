@@ -1,6 +1,13 @@
 package com.software.financetracker.feature.goal.detail
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,15 +15,31 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.presentation.CopVisualTransformation
 import com.software.financetracker.feature.goal.list.GoalUiModel
 import java.text.NumberFormat
@@ -26,7 +49,7 @@ import java.util.Locale
 @Composable
 fun GoalDetailScreen(
     state: GoalDetailState,
-    onAction: (GoalDetailAction) -> Unit
+    onAction: (GoalDetailAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -34,12 +57,18 @@ fun GoalDetailScreen(
                 title = { Text(state.goal?.name ?: "") },
                 navigationIcon = {
                     IconButton(onClick = { onAction(GoalDetailAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onAction(GoalDetailAction.OnEditClick) }) {
-                        Icon(Icons.Rounded.Edit, contentDescription = "Editar")
+                        Icon(
+                            Icons.Rounded.Edit,
+                            contentDescription = stringResource(R.string.cd_edit)
+                        )
                     }
                 }
             )
@@ -47,7 +76,9 @@ fun GoalDetailScreen(
     ) { innerPadding ->
         when {
             state.isLoading || state.goal == null -> Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
 
@@ -63,12 +94,12 @@ fun GoalDetailScreen(
         if (state.showContributionDialog) {
             AlertDialog(
                 onDismissRequest = { onAction(GoalDetailAction.OnContributionDismiss) },
-                title = { Text("Agregar aporte") },
+                title = { Text(stringResource(R.string.goal_detail_contribution_dialog_title)) },
                 text = {
                     OutlinedTextField(
                         value = state.contributionInput,
                         onValueChange = { onAction(GoalDetailAction.OnContributionChange(it.filter { c -> c.isDigit() })) },
-                        label = { Text("Monto (COP)") },
+                        label = { Text(stringResource(R.string.label_amount_cop)) },
                         prefix = { Text("$ ") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         visualTransformation = CopVisualTransformation(),
@@ -77,12 +108,12 @@ fun GoalDetailScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { onAction(GoalDetailAction.OnContributionConfirm) }) {
-                        Text("Agregar")
+                        Text(stringResource(R.string.goal_detail_contribution_confirm))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { onAction(GoalDetailAction.OnContributionDismiss) }) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 }
             )
@@ -96,7 +127,7 @@ private fun GoalDetailContent(
     onAction: (GoalDetailAction) -> Unit,
     showContributionDialog: Boolean,
     contributionInput: String,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
 ) {
     Column(
         modifier = Modifier
@@ -107,12 +138,18 @@ private fun GoalDetailContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Progreso", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(R.string.goal_detail_progress_label),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                     Text(
                         text = "${goal.progressPercent.toInt()}%",
                         style = MaterialTheme.typography.titleMedium,
@@ -124,26 +161,52 @@ private fun GoalDetailContent(
                     progress = { goal.progressPercent / 100f },
                     color = Color(goal.colorArgb),
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.fillMaxWidth().clip(CircleShape)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CircleShape)
                 )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(formatCop(goal.currentAmountCop), style = MaterialTheme.typography.bodyMedium)
-                    Text(formatCop(goal.targetAmountCop), style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        formatCop(goal.currentAmountCop),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        formatCop(goal.targetAmountCop),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
 
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Detalles", style = MaterialTheme.typography.titleMedium)
-                InfoRow("Falta", formatCop(goal.remainingCop))
-                InfoRow("Fecha límite", goal.deadlineDisplay)
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    stringResource(R.string.goal_detail_section_details),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                InfoRow(
+                    stringResource(R.string.goal_detail_remaining_label),
+                    formatCop(goal.remainingCop)
+                )
+                InfoRow(stringResource(R.string.goal_detail_deadline_label), goal.deadlineDisplay)
                 if (goal.requiredMonthlyCop != null) {
-                    InfoRow("Ahorro mensual requerido", formatCop(goal.requiredMonthlyCop))
+                    InfoRow(
+                        stringResource(R.string.goal_detail_monthly_savings_label),
+                        formatCop(goal.requiredMonthlyCop)
+                    )
                 }
                 if (goal.isOverdue) {
-                    Text("Esta meta está vencida", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.goal_detail_overdue_message),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
@@ -154,7 +217,7 @@ private fun GoalDetailContent(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Agregar aporte")
+                Text(stringResource(R.string.goal_detail_add_contribution))
             }
 
             OutlinedButton(
@@ -162,7 +225,7 @@ private fun GoalDetailContent(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Marcar como lograda")
+                Text(stringResource(R.string.goal_detail_mark_achieved))
             }
         }
     }
@@ -171,7 +234,11 @@ private fun GoalDetailContent(
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }
 }

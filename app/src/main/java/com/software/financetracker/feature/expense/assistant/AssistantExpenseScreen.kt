@@ -28,8 +28,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.presentation.CopVisualTransformation
 import com.software.financetracker.ui.components.iconForKey
 
@@ -37,15 +39,18 @@ import com.software.financetracker.ui.components.iconForKey
 @Composable
 fun AssistantExpenseScreen(
     state: AssistantExpenseState,
-    onAction: (AssistantExpenseAction) -> Unit
+    onAction: (AssistantExpenseAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registrar gasto") },
+                title = { Text(stringResource(R.string.assistant_expense_title)) },
                 navigationIcon = {
                     IconButton(onClick = { onAction(AssistantExpenseAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 }
             )
@@ -74,7 +79,7 @@ fun AssistantExpenseScreen(
                 onValueChange = {
                     onAction(AssistantExpenseAction.OnAmountChange(it.filter { c -> c.isDigit() }))
                 },
-                label = { Text("Monto (COP)") },
+                label = { Text(stringResource(R.string.label_amount_cop)) },
                 prefix = { Text("$ ") },
                 isError = state.amountError != null,
                 supportingText = { state.amountError?.let { Text(it.asString()) } },
@@ -85,10 +90,10 @@ fun AssistantExpenseScreen(
             )
 
             Text(
-                text = "Categoría",
+                text = stringResource(R.string.label_category),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (state.categoryError != null) MaterialTheme.colorScheme.error
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                else MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             if (state.categoryError != null) {
@@ -133,7 +138,7 @@ fun AssistantExpenseScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Guardar")
+                    Text(stringResource(R.string.action_save))
                 }
             }
         }

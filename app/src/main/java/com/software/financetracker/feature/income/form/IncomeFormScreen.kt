@@ -55,9 +55,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.presentation.CopVisualTransformation
 import com.software.financetracker.domain.model.RecurrenceType
 import com.software.financetracker.domain.model.displayName
@@ -70,7 +72,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun IncomeFormScreen(
     state: IncomeFormState,
-    onAction: (IncomeFormAction) -> Unit
+    onAction: (IncomeFormAction) -> Unit,
 ) {
     val isEditingRecurring = state.recurringIncomeId != null
     val isEditing = state.incomeId != null || isEditingRecurring
@@ -89,25 +91,41 @@ fun IncomeFormScreen(
                 title = {
                     Text(
                         when {
-                            isEditingRecurring -> "Editar ingreso recurrente"
-                            state.incomeId != null -> "Editar ingreso"
-                            else -> "Nuevo ingreso"
+                            isEditingRecurring -> stringResource(R.string.income_form_title_edit_recurring)
+                            state.incomeId != null -> stringResource(R.string.income_form_title_edit)
+                            else -> stringResource(R.string.income_form_title_new)
                         }
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { onAction(IncomeFormAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     AnimatedVisibility(
                         visible = isEditing,
-                        enter = fadeIn(animationSpec = tween(200)) + scaleIn(initialScale = 0.8f, animationSpec = tween(200)),
-                        exit = fadeOut(animationSpec = tween(150)) + scaleOut(targetScale = 0.8f, animationSpec = tween(150))
+                        enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+                            initialScale = 0.8f,
+                            animationSpec = tween(
+                                200
+                            )
+                        ),
+                        exit = fadeOut(animationSpec = tween(150)) + scaleOut(
+                            targetScale = 0.8f,
+                            animationSpec = tween(
+                                150
+                            )
+                        )
                     ) {
                         IconButton(onClick = { onAction(IncomeFormAction.OnDeleteClick) }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "Eliminar")
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.action_delete)
+                            )
                         }
                     }
                 }
@@ -125,7 +143,7 @@ fun IncomeFormScreen(
             OutlinedTextField(
                 value = state.amountInput,
                 onValueChange = { onAction(IncomeFormAction.OnAmountChange(it.filter { c -> c.isDigit() })) },
-                label = { Text("Monto (COP)") },
+                label = { Text(stringResource(R.string.label_amount_cop)) },
                 prefix = { Text("$ ") },
                 isError = state.amountError != null,
                 supportingText = { state.amountError?.let { Text(it.asString()) } },
@@ -139,7 +157,7 @@ fun IncomeFormScreen(
                 OutlinedTextField(
                     value = state.selectedSourceType.displayName,
                     onValueChange = {},
-                    label = { Text("Tipo de ingreso") },
+                    label = { Text(stringResource(R.string.income_form_type_label)) },
                     readOnly = true,
                     leadingIcon = {
                         Box(
@@ -204,7 +222,7 @@ fun IncomeFormScreen(
                                     text = type.displayName,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = if (type == state.selectedSourceType) FontWeight.SemiBold
-                                                 else FontWeight.Normal
+                                    else FontWeight.Normal
                                 )
                             },
                             trailingIcon = {
@@ -212,7 +230,7 @@ fun IncomeFormScreen(
                                     imageVector = Icons.Rounded.Check,
                                     contentDescription = null,
                                     tint = if (type == state.selectedSourceType) MaterialTheme.colorScheme.primary
-                                           else Color.Transparent,
+                                    else Color.Transparent,
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
@@ -227,7 +245,7 @@ fun IncomeFormScreen(
                 OutlinedTextField(
                     value = state.customSource,
                     onValueChange = { onAction(IncomeFormAction.OnCustomSourceChange(it)) },
-                    label = { Text("Especifica la fuente") },
+                    label = { Text(stringResource(R.string.income_form_custom_source_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -236,18 +254,32 @@ fun IncomeFormScreen(
             OutlinedTextField(
                 value = state.notes,
                 onValueChange = { onAction(IncomeFormAction.OnNotesChange(it)) },
-                label = { Text("Notas (opcional)") },
+                label = { Text(stringResource(R.string.label_notes_optional)) },
                 maxLines = 3,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Box(modifier = Modifier.fillMaxWidth().clickable { onAction(IncomeFormAction.OnDateFieldClick) }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAction(IncomeFormAction.OnDateFieldClick) }) {
                 OutlinedTextField(
                     value = state.displayDate,
                     onValueChange = {},
-                    label = { Text(if (state.isRecurring) "Fecha de inicio" else "Fecha") },
+                    label = {
+                        Text(
+                            if (state.isRecurring) stringResource(R.string.label_start_date) else stringResource(
+                                R.string.label_date
+                            )
+                        )
+                    },
                     readOnly = true,
-                    trailingIcon = { Icon(Icons.Rounded.CalendarToday, contentDescription = "Seleccionar fecha") },
+                    trailingIcon = {
+                        Icon(
+                            Icons.Rounded.CalendarToday,
+                            contentDescription = stringResource(R.string.cd_select_date)
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -265,7 +297,10 @@ fun IncomeFormScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("¿Se repite?", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(R.string.label_repeats),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                     Switch(
                         checked = state.isRecurring,
                         onCheckedChange = { onAction(IncomeFormAction.OnToggleRecurring) }
@@ -274,7 +309,10 @@ fun IncomeFormScreen(
             }
 
             if (state.isRecurring) {
-                Text("Frecuencia", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    stringResource(R.string.label_frequency),
+                    style = MaterialTheme.typography.labelLarge
+                )
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         recurrenceTypes.filterNot { it is RecurrenceType.Custom }.forEach { type ->
@@ -291,7 +329,7 @@ fun IncomeFormScreen(
                         FilterChip(
                             selected = state.recurrenceType is RecurrenceType.Custom,
                             onClick = { onAction(IncomeFormAction.OnRecurrenceTypeSelect(customType)) },
-                            label = { Text("Personalizado") }
+                            label = { Text(stringResource(R.string.label_custom)) }
                         )
                     }
                 }
@@ -300,7 +338,7 @@ fun IncomeFormScreen(
                     OutlinedTextField(
                         value = state.customIntervalDays.toString(),
                         onValueChange = { onAction(IncomeFormAction.OnCustomIntervalChange(it.filter { c -> c.isDigit() })) },
-                        label = { Text("Cada N días") },
+                        label = { Text(stringResource(R.string.label_every_n_days)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -315,9 +353,12 @@ fun IncomeFormScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("Activo", style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            text = "Desactivar para pausar sin eliminar",
+                            stringResource(R.string.label_active),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = stringResource(R.string.label_pause_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -330,29 +371,42 @@ fun IncomeFormScreen(
             }
 
             if (state.showDeleteConfirmDialog) {
-                val dialogTitle = if (isEditingRecurring) "Eliminar ingreso recurrente" else "Eliminar ingreso"
+                val dialogTitle =
+                    if (isEditingRecurring) stringResource(R.string.income_form_delete_recurring_title) else stringResource(
+                        R.string.income_form_delete_title
+                    )
                 val dialogText = if (isEditingRecurring)
-                    "¿Eliminar esta plantilla recurrente? Los ingresos ya generados no se eliminarán."
+                    stringResource(R.string.income_form_delete_recurring_message)
                 else
-                    "¿Estás seguro de que deseas eliminar este ingreso?"
+                    stringResource(R.string.income_form_delete_message)
                 AlertDialog(
                     onDismissRequest = { onAction(IncomeFormAction.OnDeleteDismiss) },
                     title = { Text(dialogTitle) },
                     text = { Text(dialogText) },
                     confirmButton = {
                         TextButton(onClick = { onAction(IncomeFormAction.OnDeleteConfirm) }) {
-                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                            Text(
+                                stringResource(R.string.action_delete),
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { onAction(IncomeFormAction.OnDeleteDismiss) }) { Text("Cancelar") }
+                        TextButton(onClick = { onAction(IncomeFormAction.OnDeleteDismiss) }) {
+                            Text(
+                                stringResource(R.string.action_cancel)
+                            )
+                        }
                     }
                 )
             }
 
             if (state.showDatePicker) {
                 val initialMillis = remember(state.selectedDateStorage) {
-                    LocalDate.parse(state.selectedDateStorage, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    LocalDate.parse(
+                        state.selectedDateStorage,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    )
                         .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
                 }
                 val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
@@ -360,14 +414,27 @@ fun IncomeFormScreen(
                     onDismissRequest = { onAction(IncomeFormAction.OnDatePickerDismiss) },
                     confirmButton = {
                         TextButton(onClick = {
-                            pickerState.selectedDateMillis?.let { onAction(IncomeFormAction.OnDateSelected(it)) }
-                        }) { Text("OK") }
+                            pickerState.selectedDateMillis?.let {
+                                onAction(
+                                    IncomeFormAction.OnDateSelected(
+                                        it
+                                    )
+                                )
+                            }
+                        }) { Text(stringResource(R.string.action_ok)) }
                     },
                     dismissButton = {
-                        TextButton(onClick = { onAction(IncomeFormAction.OnDatePickerDismiss) }) { Text("Cancelar") }
+                        TextButton(onClick = { onAction(IncomeFormAction.OnDatePickerDismiss) }) {
+                            Text(
+                                stringResource(R.string.action_cancel)
+                            )
+                        }
                     }
                 ) {
-                    DatePicker(state = pickerState, modifier = Modifier.verticalScroll(rememberScrollState()))
+                    DatePicker(
+                        state = pickerState,
+                        modifier = Modifier.verticalScroll(rememberScrollState())
+                    )
                 }
             }
 
@@ -380,10 +447,12 @@ fun IncomeFormScreen(
                 enabled = !state.isSaving
             ) {
                 if (state.isSaving) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp), strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 } else {
-                    Text("Guardar")
+                    Text(stringResource(R.string.action_save))
                 }
             }
         }

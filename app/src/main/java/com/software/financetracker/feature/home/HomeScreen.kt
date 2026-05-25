@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -51,8 +50,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.feature.goal.list.GoalUiModel
 import com.software.financetracker.feature.home.components.CategoryCard
 import com.software.financetracker.feature.home.components.IncomeCard
@@ -65,7 +66,7 @@ import com.software.financetracker.ui.theme.Shapes
 @Composable
 fun HomeScreen(
     state: HomeState,
-    onAction: (HomeAction) -> Unit
+    onAction: (HomeAction) -> Unit,
 ) {
     var isFabExpanded by remember { mutableStateOf(false) }
     val fabRotation by animateFloatAsState(
@@ -94,7 +95,10 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ) {
-                    Icon(Icons.Rounded.BarChart, contentDescription = "Ver métricas")
+                    Icon(
+                        Icons.Rounded.BarChart,
+                        contentDescription = stringResource(R.string.home_fab_metrics_cd)
+                    )
                 }
 
                 AnimatedVisibility(
@@ -112,26 +116,38 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FabMenuItem(label = "Nueva categoría", icon = {
-                            Icon(Icons.Rounded.Category, contentDescription = "Nueva categoría")
+                        FabMenuItem(label = stringResource(R.string.home_fab_new_category), icon = {
+                            Icon(
+                                Icons.Rounded.Category,
+                                contentDescription = stringResource(R.string.home_fab_new_category)
+                            )
                         }) {
                             isFabExpanded = false
                             onAction(HomeAction.OnAddCategoryClick)
                         }
-                        FabMenuItem(label = "Nuevo gasto", icon = {
-                            Icon(Icons.Rounded.Receipt, contentDescription = "Nuevo gasto")
+                        FabMenuItem(label = stringResource(R.string.home_fab_new_expense), icon = {
+                            Icon(
+                                Icons.Rounded.Receipt,
+                                contentDescription = stringResource(R.string.home_fab_new_expense)
+                            )
                         }) {
                             isFabExpanded = false
                             onAction(HomeAction.OnAddExpenseClick)
                         }
-                        FabMenuItem(label = "Nuevo ingreso", icon = {
-                            Icon(Icons.Rounded.AttachMoney, contentDescription = "Nuevo ingreso")
+                        FabMenuItem(label = stringResource(R.string.home_fab_new_income), icon = {
+                            Icon(
+                                Icons.Rounded.AttachMoney,
+                                contentDescription = stringResource(R.string.home_fab_new_income)
+                            )
                         }) {
                             isFabExpanded = false
                             onAction(HomeAction.OnAddIncomeClick)
                         }
-                        FabMenuItem(label = "Nueva meta", icon = {
-                            Icon(Icons.Rounded.Savings, contentDescription = "Nueva meta")
+                        FabMenuItem(label = stringResource(R.string.home_fab_new_goal), icon = {
+                            Icon(
+                                Icons.Rounded.Savings,
+                                contentDescription = stringResource(R.string.home_fab_new_goal)
+                            )
                         }) {
                             isFabExpanded = false
                             onAction(HomeAction.OnAddGoalClick)
@@ -147,7 +163,9 @@ fun HomeScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Add,
-                        contentDescription = if (isFabExpanded) "Cerrar" else "Agregar",
+                        contentDescription = if (isFabExpanded) stringResource(R.string.action_close) else stringResource(
+                            R.string.fab_add_cd
+                        ),
                         modifier = Modifier.graphicsLayer { rotationZ = fabRotation }
                     )
                 }
@@ -164,18 +182,22 @@ fun HomeScreen(
             targetState = contentState,
             transitionSpec = {
                 fadeIn(animationSpec = tween(durationMillis = 300)) togetherWith
-                    fadeOut(animationSpec = tween(durationMillis = 150))
+                        fadeOut(animationSpec = tween(durationMillis = 150))
             },
             label = "homeContent"
         ) { target ->
             when (target) {
                 0 -> Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator() }
 
                 1 -> Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -189,21 +211,28 @@ fun HomeScreen(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Crea tu primera categoría",
+                            text = stringResource(R.string.home_empty_message),
                             style = MaterialTheme.typography.titleMedium
                         )
                         Button(
                             onClick = { onAction(HomeAction.OnAddCategoryClick) },
                             shape = Shapes.large
                         ) {
-                            Text("Nueva categoría")
+                            Text(stringResource(R.string.home_fab_new_category))
                         }
                     }
                 }
 
                 else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 120.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        top = 16.dp,
+                        end = 16.dp,
+                        bottom = 120.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
@@ -251,7 +280,7 @@ fun HomeScreen(
 private fun FabMenuItem(
     label: String,
     icon: @Composable () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -277,11 +306,11 @@ private fun FabMenuItem(
 private fun GoalsSection(
     goals: List<GoalUiModel>,
     onGoalClick: (Long) -> Unit,
-    onViewAllClick: () -> Unit
+    onViewAllClick: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = "Metas activas",
+            text = stringResource(R.string.home_goals_title),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -290,7 +319,7 @@ private fun GoalsSection(
         }
         if (goals.size > 3) {
             TextButton(onClick = onViewAllClick, modifier = Modifier.align(Alignment.End)) {
-                Text("Ver todas (${goals.size})")
+                Text(stringResource(R.string.home_goals_view_all, goals.size))
             }
         }
     }
@@ -299,7 +328,7 @@ private fun GoalsSection(
 @Composable
 private fun GoalCompactCard(
     goal: GoalUiModel,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     ElevatedCard(
         onClick = onClick,
@@ -315,7 +344,11 @@ private fun GoalCompactCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(goal.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    goal.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
                 Text(
                     text = "${goal.progressPercent.toInt()}%",
                     style = MaterialTheme.typography.labelMedium,
@@ -324,7 +357,9 @@ private fun GoalCompactCard(
             }
             LinearProgressIndicator(
                 progress = { (goal.progressPercent / 100f).coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().clip(CircleShape),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(CircleShape),
                 color = MaterialTheme.colorScheme.primary
             )
             Row(
@@ -336,16 +371,19 @@ private fun GoalCompactCard(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "Meta: ${formatCop(goal.targetAmountCop)}",
+                    text = stringResource(
+                        R.string.home_goal_target_amount,
+                        formatCop(goal.targetAmountCop)
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                text = "Vence: ${goal.deadlineDisplay}",
+                text = stringResource(R.string.home_goal_deadline, goal.deadlineDisplay),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (goal.isOverdue) MaterialTheme.colorScheme.error
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

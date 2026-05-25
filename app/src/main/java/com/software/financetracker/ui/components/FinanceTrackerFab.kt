@@ -8,11 +8,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.software.financetracker.R
 
 @Composable
 fun FinanceTrackerFab(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     FloatingActionButton(
         onClick = onClick,
@@ -21,6 +23,6 @@ fun FinanceTrackerFab(
         contentColor = MaterialTheme.colorScheme.onPrimary,
         modifier = modifier
     ) {
-        Icon(Icons.Rounded.Add, contentDescription = "Agregar")
+        Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.fab_add_cd))
     }
 }

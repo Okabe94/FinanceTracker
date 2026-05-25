@@ -23,8 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.feature.home.CategoryUiModel
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
@@ -33,7 +35,7 @@ import com.software.financetracker.ui.theme.Shapes
 fun CategoryCard(
     category: CategoryUiModel,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         onClick = onClick,
@@ -82,7 +84,7 @@ fun CategoryCard(
                     Text(
                         text = if (category.monthlyLimit != null)
                             "/ ${formatCop(category.monthlyLimit)}"
-                        else "Sin límite",
+                        else stringResource(R.string.category_card_no_limit),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -93,13 +95,15 @@ fun CategoryCard(
                     LinearProgressIndicator(
                         progress = { progress },
                         color = if (category.isOverLimit) MaterialTheme.colorScheme.error
-                                else MaterialTheme.colorScheme.primary,
+                        else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.fillMaxWidth().clip(CircleShape)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(CircleShape)
                     )
                     if (category.isOverLimit) {
                         Text(
-                            text = "Límite superado",
+                            text = stringResource(R.string.label_over_limit),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.error
                         )

@@ -11,8 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.ui.theme.Shapes
 
 @Composable
@@ -20,7 +22,7 @@ fun IncomeCard(
     totalIncomeCop: Long,
     netBalanceCop: Long,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         onClick = onClick,
@@ -36,7 +38,10 @@ fun IncomeCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Ingresos este mes", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.income_card_income_title),
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Text(
                     text = formatCop(totalIncomeCop),
                     style = MaterialTheme.typography.bodyLarge,
@@ -49,9 +54,12 @@ fun IncomeCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Balance neto", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.income_card_balance_title),
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 val balanceColor = if (netBalanceCop >= 0L) MaterialTheme.colorScheme.primary
-                                   else MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.error
                 Text(
                     text = "${if (netBalanceCop >= 0) "+" else ""}${formatCop(netBalanceCop)}",
                     style = MaterialTheme.typography.bodyLarge,

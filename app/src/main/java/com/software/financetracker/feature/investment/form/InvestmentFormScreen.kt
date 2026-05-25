@@ -58,8 +58,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
@@ -80,21 +82,33 @@ private val presetInvestmentIcons = listOf(
 @Composable
 fun InvestmentFormScreen(
     state: InvestmentFormState,
-    onAction: (InvestmentFormAction) -> Unit
+    onAction: (InvestmentFormAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (state.investmentId == null) "Nueva inversión" else "Editar inversión") },
+                title = {
+                    Text(
+                        if (state.investmentId == null) stringResource(R.string.investment_form_title_new) else stringResource(
+                            R.string.investment_form_title_edit
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onAction(InvestmentFormAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     if (state.investmentId != null) {
                         IconButton(onClick = { onAction(InvestmentFormAction.OnDeleteClick) }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "Eliminar")
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.action_delete)
+                            )
                         }
                     }
                 }
@@ -115,7 +129,7 @@ fun InvestmentFormScreen(
             OutlinedTextField(
                 value = state.name,
                 onValueChange = { onAction(InvestmentFormAction.OnNameChange(it)) },
-                label = { Text("Nombre") },
+                label = { Text(stringResource(R.string.label_name)) },
                 isError = state.nameError != null,
                 supportingText = { state.nameError?.let { Text(it.asString()) } },
                 modifier = Modifier.fillMaxWidth(),
@@ -130,7 +144,7 @@ fun InvestmentFormScreen(
                     value = state.selectedCurrency,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Moneda") },
+                    label = { Text(stringResource(R.string.investment_form_currency_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.showCurrencyDropdown) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -149,7 +163,7 @@ fun InvestmentFormScreen(
                 }
             }
 
-            Text("Color", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.label_color), style = MaterialTheme.typography.labelLarge)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(6),
                 modifier = Modifier
@@ -188,7 +202,7 @@ fun InvestmentFormScreen(
                 }
             }
 
-            Text("Ícono", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.label_icon), style = MaterialTheme.typography.labelLarge)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(5),
                 modifier = Modifier
@@ -234,7 +248,10 @@ fun InvestmentFormScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tasa de retorno fija", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(R.string.investment_form_fixed_roi_label),
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Switch(
                     checked = state.hasFixedRoi,
                     onCheckedChange = { onAction(InvestmentFormAction.OnFixedRoiToggle(it)) }
@@ -244,15 +261,15 @@ fun InvestmentFormScreen(
             AnimatedVisibility(
                 visible = state.hasFixedRoi,
                 enter = expandVertically(animationSpec = tween(250), expandFrom = Alignment.Top) +
-                    fadeIn(animationSpec = tween(200)),
+                        fadeIn(animationSpec = tween(200)),
                 exit = shrinkVertically(animationSpec = tween(200), shrinkTowards = Alignment.Top) +
-                    fadeOut(animationSpec = tween(150))
+                        fadeOut(animationSpec = tween(150))
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = state.annualRateInput,
                         onValueChange = { onAction(InvestmentFormAction.OnAnnualRateChange(it)) },
-                        label = { Text("Tasa anual (%)") },
+                        label = { Text(stringResource(R.string.investment_form_annual_rate_label)) },
                         isError = state.annualRateError != null,
                         supportingText = { state.annualRateError?.let { Text(it.asString()) } },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -264,7 +281,7 @@ fun InvestmentFormScreen(
                         value = state.maturityDateDisplay ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Fecha de vencimiento (opcional)") },
+                        label = { Text(stringResource(R.string.investment_form_maturity_date_label)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onAction(InvestmentFormAction.OnMaturityDateClick) },
@@ -278,7 +295,10 @@ fun InvestmentFormScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Meta de valor", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(R.string.investment_form_target_value_label),
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Switch(
                     checked = state.targetEnabled,
                     onCheckedChange = { onAction(InvestmentFormAction.OnTargetEnabledToggled) }
@@ -288,15 +308,15 @@ fun InvestmentFormScreen(
             AnimatedVisibility(
                 visible = state.targetEnabled,
                 enter = expandVertically(animationSpec = tween(250), expandFrom = Alignment.Top) +
-                    fadeIn(animationSpec = tween(200)),
+                        fadeIn(animationSpec = tween(200)),
                 exit = shrinkVertically(animationSpec = tween(200), shrinkTowards = Alignment.Top) +
-                    fadeOut(animationSpec = tween(150))
+                        fadeOut(animationSpec = tween(150))
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = state.targetValueInput,
                         onValueChange = { onAction(InvestmentFormAction.OnTargetValueChanged(it)) },
-                        label = { Text("Valor objetivo") },
+                        label = { Text(stringResource(R.string.investment_form_target_value_input)) },
                         isError = state.targetValueError != null,
                         supportingText = { state.targetValueError?.let { Text(it.asString()) } },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -308,7 +328,7 @@ fun InvestmentFormScreen(
                         value = state.targetDateDisplay ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Fecha objetivo (opcional)") },
+                        label = { Text(stringResource(R.string.investment_form_target_date_label)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onAction(InvestmentFormAction.OnTargetDateClick) },
@@ -332,7 +352,7 @@ fun InvestmentFormScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Guardar")
+                    Text(stringResource(R.string.action_save))
                 }
             }
 
@@ -349,11 +369,11 @@ fun InvestmentFormScreen(
                     datePickerState.selectedDateMillis?.let {
                         onAction(InvestmentFormAction.OnMaturityDateSelected(it))
                     }
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.action_confirm)) }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentFormAction.OnMaturityDatePickerDismiss) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         ) {
@@ -370,11 +390,11 @@ fun InvestmentFormScreen(
                     datePickerState.selectedDateMillis?.let {
                         onAction(InvestmentFormAction.OnTargetDateSelected(it))
                     }
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.action_confirm)) }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentFormAction.OnTargetDatePickerDismiss) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         ) {
@@ -385,17 +405,17 @@ fun InvestmentFormScreen(
     if (state.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { onAction(InvestmentFormAction.OnDeleteDismiss) },
-            title = { Text("Eliminar inversión") },
-            text = { Text("¿Estás seguro? Se eliminarán todos los movimientos de esta inversión.") },
+            title = { Text(stringResource(R.string.investment_form_delete_title)) },
+            text = { Text(stringResource(R.string.investment_detail_delete_message)) },
             confirmButton = {
                 Button(
                     onClick = { onAction(InvestmentFormAction.OnDeleteConfirm) },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.action_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentFormAction.OnDeleteDismiss) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )

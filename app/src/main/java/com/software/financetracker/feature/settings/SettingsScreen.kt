@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,9 +41,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.theme.ThemeMode
 
@@ -53,15 +54,18 @@ import com.software.financetracker.ui.theme.ThemeMode
 fun SettingsScreen(
     state: SettingsState,
     snackbarHostState: SnackbarHostState,
-    onAction: (SettingsAction) -> Unit
+    onAction: (SettingsAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Configuración") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = { onAction(SettingsAction.OnBackClick) }) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 }
             )
@@ -102,14 +106,16 @@ private fun SectionHeader(title: String) {
 private fun SettingsRow(
     label: String,
     description: String? = null,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+        Column(modifier = Modifier
+            .weight(1f)
+            .padding(end = 16.dp)) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             if (description != null) {
                 Text(
@@ -127,14 +133,17 @@ private fun SettingsRow(
 @Composable
 private fun AppearanceSection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeader("Apariencia")
+        SectionHeader(stringResource(R.string.settings_section_appearance))
         Column {
-            Text("Tema", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(R.string.settings_theme_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
             Spacer(Modifier.height(8.dp))
             val options = listOf(
-                ThemeMode.SYSTEM to "Sistema",
-                ThemeMode.LIGHT to "Claro",
-                ThemeMode.DARK to "Oscuro"
+                ThemeMode.SYSTEM to stringResource(R.string.settings_theme_system),
+                ThemeMode.LIGHT to stringResource(R.string.settings_theme_light),
+                ThemeMode.DARK to stringResource(R.string.settings_theme_dark)
             )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 options.forEachIndexed { index, (mode, label) ->
@@ -154,7 +163,7 @@ private fun AppearanceSection(state: SettingsState, onAction: (SettingsAction) -
 @Composable
 private fun CurrencySection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeader("Moneda")
+        SectionHeader(stringResource(R.string.settings_section_currency))
         ExposedDropdownMenuBox(
             expanded = state.showCurrencyDropdown,
             onExpandedChange = { onAction(SettingsAction.OnCurrencyDropdownToggle) }
@@ -163,8 +172,8 @@ private fun CurrencySection(state: SettingsState, onAction: (SettingsAction) -> 
                 value = state.defaultCurrency,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Moneda predeterminada") },
-                supportingText = { Text("Usada al crear nuevas inversiones") },
+                label = { Text(stringResource(R.string.settings_currency_label)) },
+                supportingText = { Text(stringResource(R.string.settings_currency_hint)) },
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.showCurrencyDropdown)
                 },
@@ -193,10 +202,10 @@ private fun CurrencySection(state: SettingsState, onAction: (SettingsAction) -> 
 @Composable
 private fun ExchangeRatesSection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeader("Tasas de cambio")
+        SectionHeader(stringResource(R.string.settings_section_exchange_rates))
         SettingsRow(
-            label = "Usar tasas propias",
-            description = "Desactiva la consulta automática a la API y permite ingresar tus propias tasas"
+            label = stringResource(R.string.settings_custom_rates_label),
+            description = stringResource(R.string.settings_custom_rates_desc)
         ) {
             Switch(
                 checked = state.useCustomExchangeRates,
@@ -206,15 +215,15 @@ private fun ExchangeRatesSection(state: SettingsState, onAction: (SettingsAction
         AnimatedVisibility(
             visible = state.useCustomExchangeRates,
             enter = expandVertically(animationSpec = tween(250), expandFrom = Alignment.Top) +
-                fadeIn(animationSpec = tween(200)),
+                    fadeIn(animationSpec = tween(200)),
             exit = shrinkVertically(animationSpec = tween(200), shrinkTowards = Alignment.Top) +
-                fadeOut(animationSpec = tween(150))
+                    fadeOut(animationSpec = tween(150))
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = state.customUsdRate,
                     onValueChange = { onAction(SettingsAction.OnCustomUsdRateChange(it)) },
-                    label = { Text("USD → COP") },
+                    label = { Text(stringResource(R.string.settings_usd_rate_label)) },
                     isError = state.customUsdRateError != null,
                     supportingText = state.customUsdRateError?.let { { Text(it) } },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -224,7 +233,7 @@ private fun ExchangeRatesSection(state: SettingsState, onAction: (SettingsAction
                 OutlinedTextField(
                     value = state.customEurRate,
                     onValueChange = { onAction(SettingsAction.OnCustomEurRateChange(it)) },
-                    label = { Text("EUR → COP") },
+                    label = { Text(stringResource(R.string.settings_eur_rate_label)) },
                     isError = state.customEurRateError != null,
                     supportingText = state.customEurRateError?.let { { Text(it) } },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -234,7 +243,7 @@ private fun ExchangeRatesSection(state: SettingsState, onAction: (SettingsAction
                 OutlinedTextField(
                     value = state.customGbpRate,
                     onValueChange = { onAction(SettingsAction.OnCustomGbpRateChange(it)) },
-                    label = { Text("GBP → COP") },
+                    label = { Text(stringResource(R.string.settings_gbp_rate_label)) },
                     isError = state.customGbpRateError != null,
                     supportingText = state.customGbpRateError?.let { { Text(it) } },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -246,7 +255,11 @@ private fun ExchangeRatesSection(state: SettingsState, onAction: (SettingsAction
                     enabled = !state.isSavingRates,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(if (state.isSavingRates) "Guardando..." else "Guardar tasas")
+                    Text(
+                        if (state.isSavingRates) stringResource(R.string.settings_saving_rates_button) else stringResource(
+                            R.string.settings_save_rates_button
+                        )
+                    )
                 }
             }
         }
@@ -256,10 +269,10 @@ private fun ExchangeRatesSection(state: SettingsState, onAction: (SettingsAction
 @Composable
 private fun NotificationsSection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeader("Notificaciones")
+        SectionHeader(stringResource(R.string.settings_section_notifications))
         SettingsRow(
-            label = "Habilitar notificaciones",
-            description = "Alertas de presupuesto cuando superas o te acercas al límite de una categoría"
+            label = stringResource(R.string.settings_notifications_label),
+            description = stringResource(R.string.settings_notifications_desc)
         ) {
             Switch(
                 checked = state.notificationsEnabled,

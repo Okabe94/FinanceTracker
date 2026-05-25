@@ -22,8 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.TrendingUp
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -49,8 +49,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.components.DonutChart
 import com.software.financetracker.ui.components.DonutLegend
@@ -61,15 +63,18 @@ import com.software.financetracker.ui.theme.Shapes
 @Composable
 fun InvestmentListScreen(
     state: InvestmentListState,
-    onAction: (InvestmentListAction) -> Unit
+    onAction: (InvestmentListAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inversiones") },
+                title = { Text(stringResource(R.string.investment_list_title)) },
                 actions = {
                     IconButton(onClick = { onAction(InvestmentListAction.OnRatesBottomSheetToggled) }) {
-                        Icon(Icons.Rounded.Tune, contentDescription = "Tasas de cambio")
+                        Icon(
+                            Icons.Rounded.Tune,
+                            contentDescription = stringResource(R.string.investment_list_rates_cd)
+                        )
                     }
                 }
             )
@@ -79,7 +84,10 @@ fun InvestmentListScreen(
                 onClick = { onAction(InvestmentListAction.OnAddClick) },
                 shape = Shapes.medium
             ) {
-                Icon(Icons.Rounded.Add, contentDescription = "Nueva inversión")
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = stringResource(R.string.investment_list_new_cd)
+                )
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -97,13 +105,19 @@ fun InvestmentListScreen(
         when {
             state.isLoading -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator() }
             }
+
             state.totalCount == 0 -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -117,12 +131,12 @@ fun InvestmentListScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            "Sin inversiones",
+                            stringResource(R.string.investment_list_empty_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Agrega tu primera inversión para comenzar a rastrear tu portafolio.",
+                            stringResource(R.string.investment_list_empty_message),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -132,15 +146,23 @@ fun InvestmentListScreen(
                             onClick = { onAction(InvestmentListAction.OnAddClick) },
                             shape = Shapes.large
                         ) {
-                            Text("Agregar inversión")
+                            Text(stringResource(R.string.investment_list_add_button))
                         }
                     }
                 }
             }
+
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 80.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // 1. Portfolio summary
@@ -151,18 +173,23 @@ fun InvestmentListScreen(
                     // 2. Allocation donut (visible when ≥2 investments have value)
                     if (state.allocationSlices.size >= 2) {
                         item {
-                            ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = Shapes.medium) {
+                            ElevatedCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = Shapes.medium
+                            ) {
                                 Column(
                                     modifier = Modifier.padding(16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
                                     Text(
-                                        "Distribución",
+                                        stringResource(R.string.investment_list_distribution),
                                         style = MaterialTheme.typography.labelLarge
                                     )
                                     DonutChart(
                                         slices = state.allocationSlices,
-                                        modifier = Modifier.fillMaxWidth().height(200.dp)
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
                                     )
                                     DonutLegend(
                                         slices = state.allocationSlices,
@@ -187,7 +214,9 @@ fun InvestmentListScreen(
                     if (state.investments.isEmpty()) {
                         item {
                             Box(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(
@@ -201,7 +230,7 @@ fun InvestmentListScreen(
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        "Sin resultados",
+                                        stringResource(R.string.investment_list_empty_search),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -227,14 +256,14 @@ private fun SearchAndFilterRow(
     searchQuery: String,
     availableCurrencies: List<String>,
     activeCurrencyFilter: String?,
-    onAction: (InvestmentListAction) -> Unit
+    onAction: (InvestmentListAction) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { onAction(InvestmentListAction.OnSearchQueryChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Buscar inversión...") },
+            placeholder = { Text(stringResource(R.string.investment_list_search_placeholder)) },
             leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
             singleLine = true,
             shape = Shapes.medium
@@ -266,7 +295,7 @@ private fun ExchangeRatesBottomSheet(
     ratesUpdatedAt: String?,
     isRefreshing: Boolean,
     onDismiss: () -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -281,11 +310,14 @@ private fun ExchangeRatesBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tasas de cambio", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.investment_list_rates_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 if (isRefreshing) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                 } else {
-                    TextButton(onClick = onRefresh) { Text("Actualizar") }
+                    TextButton(onClick = onRefresh) { Text(stringResource(R.string.action_update)) }
                 }
             }
             val displayPairs = listOf("USD", "EUR", "GBP")
@@ -309,12 +341,12 @@ private fun ExchangeRatesBottomSheet(
             }
             ratesUpdatedAt?.let {
                 Text(
-                    "Actualizada: $it",
+                    stringResource(R.string.investment_list_rates_updated_at, it),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } ?: Text(
-                "Sin datos. Toca Actualizar para obtener tasas.",
+                stringResource(R.string.investment_list_rates_no_data),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -324,7 +356,8 @@ private fun ExchangeRatesBottomSheet(
 
 @Composable
 private fun PortfolioSummaryCard(summary: PortfolioSummary) {
-    val returnColor = if (summary.returnMinorUnits >= 0) Color(0xFF33B679) else MaterialTheme.colorScheme.error
+    val returnColor =
+        if (summary.returnMinorUnits >= 0) Color(0xFF33B679) else MaterialTheme.colorScheme.error
     val onContainer = MaterialTheme.colorScheme.onPrimaryContainer
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -336,7 +369,7 @@ private fun PortfolioSummaryCard(summary: PortfolioSummary) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                "PORTAFOLIO",
+                stringResource(R.string.investment_list_portfolio),
                 style = MaterialTheme.typography.labelMedium,
                 color = onContainer.copy(alpha = 0.7f)
             )
@@ -347,8 +380,15 @@ private fun PortfolioSummaryCard(summary: PortfolioSummary) {
                 color = onContainer
             )
             HorizontalDivider(color = onContainer.copy(alpha = 0.12f))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Invertido", style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.7f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    stringResource(R.string.investment_list_invested_label),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = onContainer.copy(alpha = 0.7f)
+                )
                 Text(
                     CurrencyHelper.format(summary.totalInvestedMinorUnits, "COP"),
                     style = MaterialTheme.typography.bodyMedium,
@@ -356,10 +396,18 @@ private fun PortfolioSummaryCard(summary: PortfolioSummary) {
                     color = onContainer
                 )
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Retorno", style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.7f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    stringResource(R.string.investment_list_return_label),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = onContainer.copy(alpha = 0.7f)
+                )
                 val sign = if (summary.returnMinorUnits >= 0) "+" else ""
-                val pctStr = summary.returnPercent?.let { " ($sign${String.format("%.1f", it)}%)" } ?: ""
+                val pctStr =
+                    summary.returnPercent?.let { " ($sign${String.format("%.1f", it)}%)" } ?: ""
                 Text(
                     "$sign${CurrencyHelper.format(summary.returnMinorUnits, "COP")}$pctStr",
                     style = MaterialTheme.typography.bodyMedium,
@@ -369,7 +417,7 @@ private fun PortfolioSummaryCard(summary: PortfolioSummary) {
             }
             if (!summary.isCopOnly) {
                 Text(
-                    "* solo inversiones en COP",
+                    stringResource(R.string.investment_list_cop_only_note),
                     style = MaterialTheme.typography.labelSmall,
                     color = onContainer.copy(alpha = 0.6f)
                 )
@@ -381,7 +429,9 @@ private fun PortfolioSummaryCard(summary: PortfolioSummary) {
 @Composable
 private fun InvestmentCard(card: InvestmentCardUiModel, onClick: () -> Unit) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = Shapes.medium
     ) {
         Row(
@@ -404,7 +454,11 @@ private fun InvestmentCard(card: InvestmentCardUiModel, onClick: () -> Unit) {
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(card.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    card.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
                 Text(
                     card.currency,
                     style = MaterialTheme.typography.bodySmall,

@@ -43,8 +43,10 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.presentation.CopVisualTransformation
 import com.software.financetracker.core.presentation.DecimalVisualTransformation
 import com.software.financetracker.core.util.CurrencyHelper
@@ -55,21 +57,33 @@ import com.software.financetracker.ui.theme.Shapes
 @Composable
 fun InvestmentEntryFormScreen(
     state: InvestmentEntryFormState,
-    onAction: (InvestmentEntryFormAction) -> Unit
+    onAction: (InvestmentEntryFormAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (state.entryId == null) "Nuevo movimiento" else "Editar movimiento") },
+                title = {
+                    Text(
+                        if (state.entryId == null) stringResource(R.string.investment_entry_title_new) else stringResource(
+                            R.string.investment_entry_title_edit
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onAction(InvestmentEntryFormAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 },
                 actions = {
                     if (state.entryId != null) {
                         IconButton(onClick = { onAction(InvestmentEntryFormAction.OnDeleteClick) }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "Eliminar")
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.action_delete)
+                            )
                         }
                     }
                 }
@@ -87,7 +101,10 @@ fun InvestmentEntryFormScreen(
         ) {
             Spacer(Modifier.height(4.dp))
 
-            Text("Tipo de movimiento", style = MaterialTheme.typography.labelLarge)
+            Text(
+                stringResource(R.string.investment_entry_type_label),
+                style = MaterialTheme.typography.labelLarge
+            )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(EntryType.entries) { type ->
                     FilterChip(
@@ -101,14 +118,14 @@ fun InvestmentEntryFormScreen(
             AnimatedVisibility(
                 visible = state.showAmountField,
                 enter = expandVertically(animationSpec = tween(250), expandFrom = Alignment.Top) +
-                    fadeIn(animationSpec = tween(200)),
+                        fadeIn(animationSpec = tween(200)),
                 exit = shrinkVertically(animationSpec = tween(200), shrinkTowards = Alignment.Top) +
-                    fadeOut(animationSpec = tween(150))
+                        fadeOut(animationSpec = tween(150))
             ) {
                 OutlinedTextField(
                     value = state.amountInput,
                     onValueChange = { onAction(InvestmentEntryFormAction.OnAmountChange(it)) },
-                    label = { Text("Monto") },
+                    label = { Text(stringResource(R.string.investment_entry_amount_label)) },
                     prefix = { Text(CurrencyHelper.currencySymbol(state.investmentCurrency) + " ") },
                     isError = state.amountError != null,
                     supportingText = { state.amountError?.let { Text(it.asString()) } },
@@ -127,7 +144,7 @@ fun InvestmentEntryFormScreen(
                 value = state.dateDisplay,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Fecha") },
+                label = { Text(stringResource(R.string.label_date)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onAction(InvestmentEntryFormAction.OnDateClick) }
@@ -136,7 +153,7 @@ fun InvestmentEntryFormScreen(
             OutlinedTextField(
                 value = state.notes,
                 onValueChange = { onAction(InvestmentEntryFormAction.OnNotesChange(it)) },
-                label = { Text("Notas (opcional)") },
+                label = { Text(stringResource(R.string.label_notes_optional)) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 4
             )
@@ -156,7 +173,7 @@ fun InvestmentEntryFormScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Guardar")
+                    Text(stringResource(R.string.action_save))
                 }
             }
 
@@ -173,11 +190,11 @@ fun InvestmentEntryFormScreen(
                     datePickerState.selectedDateMillis?.let {
                         onAction(InvestmentEntryFormAction.OnDateSelected(it))
                     }
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.action_confirm)) }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentEntryFormAction.OnDatePickerDismiss) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         ) {
@@ -188,17 +205,17 @@ fun InvestmentEntryFormScreen(
     if (state.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { onAction(InvestmentEntryFormAction.OnDeleteDismiss) },
-            title = { Text("Eliminar movimiento") },
-            text = { Text("¿Eliminar este movimiento?") },
+            title = { Text(stringResource(R.string.investment_entry_delete_title)) },
+            text = { Text(stringResource(R.string.investment_entry_delete_message)) },
             confirmButton = {
                 Button(
                     onClick = { onAction(InvestmentEntryFormAction.OnDeleteConfirm) },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.action_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { onAction(InvestmentEntryFormAction.OnDeleteDismiss) }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )

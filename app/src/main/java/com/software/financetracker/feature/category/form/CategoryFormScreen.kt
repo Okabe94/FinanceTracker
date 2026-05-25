@@ -44,12 +44,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 import com.software.financetracker.core.presentation.CopVisualTransformation
 import com.software.financetracker.ui.components.iconForKey
 import com.software.financetracker.ui.theme.Shapes
@@ -72,20 +74,23 @@ private val presetIcons = listOf(
 @Composable
 fun CategoryFormScreen(
     state: CategoryFormState,
-    onAction: (CategoryFormAction) -> Unit
+    onAction: (CategoryFormAction) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        if (state.categoryId == null) "Nueva categoría"
-                        else "Editar categoría"
+                        if (state.categoryId == null) stringResource(R.string.category_form_title_new)
+                        else stringResource(R.string.category_form_title_edit)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { onAction(CategoryFormAction.OnBackClick) }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back)
+                        )
                     }
                 }
             )
@@ -105,14 +110,14 @@ fun CategoryFormScreen(
             OutlinedTextField(
                 value = state.name,
                 onValueChange = { onAction(CategoryFormAction.OnNameChange(it)) },
-                label = { Text("Nombre") },
+                label = { Text(stringResource(R.string.label_name)) },
                 isError = state.nameError != null,
                 supportingText = { state.nameError?.let { Text(it.asString()) } },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
-            Text("Color", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.label_color), style = MaterialTheme.typography.labelLarge)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(6),
                 modifier = Modifier
@@ -151,7 +156,7 @@ fun CategoryFormScreen(
                 }
             }
 
-            Text("Ícono", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.label_icon), style = MaterialTheme.typography.labelLarge)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(5),
                 modifier = Modifier
@@ -164,13 +169,13 @@ fun CategoryFormScreen(
                     val selected = key == state.selectedIconKey
                     val bgColor by animateColorAsState(
                         targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer
-                                      else MaterialTheme.colorScheme.surfaceVariant,
+                        else MaterialTheme.colorScheme.surfaceVariant,
                         animationSpec = tween(durationMillis = 200),
                         label = "iconBg"
                     )
                     val iconTint by animateColorAsState(
                         targetValue = if (selected) MaterialTheme.colorScheme.primary
-                                      else MaterialTheme.colorScheme.onSurfaceVariant,
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         animationSpec = tween(durationMillis = 200),
                         label = "iconTint"
                     )
@@ -197,7 +202,10 @@ fun CategoryFormScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Límite mensual", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(R.string.category_form_monthly_limit_label),
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Switch(
                     checked = state.hasLimit,
                     onCheckedChange = { onAction(CategoryFormAction.OnLimitToggle(it)) }
@@ -220,7 +228,7 @@ fun CategoryFormScreen(
                     onValueChange = {
                         onAction(CategoryFormAction.OnLimitAmountChange(it.filter { c -> c.isDigit() }))
                     },
-                    label = { Text("Monto en COP") },
+                    label = { Text(stringResource(R.string.category_form_amount_cop_label)) },
                     prefix = { Text("$ ") },
                     isError = state.limitError != null,
                     supportingText = { state.limitError?.let { Text(it.asString()) } },
@@ -246,7 +254,7 @@ fun CategoryFormScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Guardar")
+                    Text(stringResource(R.string.action_save))
                 }
             }
 

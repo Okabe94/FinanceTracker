@@ -23,8 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.software.financetracker.R
 
 @Composable
 fun MonthSelector(
@@ -33,7 +35,7 @@ fun MonthSelector(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onGoToCurrentMonth: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
@@ -49,7 +51,10 @@ fun MonthSelector(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onPrevious) {
-                    Icon(Icons.Rounded.ChevronLeft, contentDescription = "Mes anterior")
+                    Icon(
+                        Icons.Rounded.ChevronLeft,
+                        contentDescription = stringResource(R.string.month_selector_previous)
+                    )
                 }
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -68,7 +73,7 @@ fun MonthSelector(
                     )
                 } else {
                     Text(
-                        text = "Ir a hoy",
+                        text = stringResource(R.string.month_selector_go_today),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
@@ -79,7 +84,10 @@ fun MonthSelector(
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onNext) {
-                    Icon(Icons.Rounded.ChevronRight, contentDescription = "Mes siguiente")
+                    Icon(
+                        Icons.Rounded.ChevronRight,
+                        contentDescription = stringResource(R.string.month_selector_next)
+                    )
                 }
             }
         }
