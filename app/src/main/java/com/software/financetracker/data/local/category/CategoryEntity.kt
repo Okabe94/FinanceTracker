@@ -9,5 +9,6 @@ data class CategoryEntity(
     val name: String,
     val colorArgb: Int,
     val iconKey: String,
-    val monthlyLimitCop: Long?
+    val monthlyLimitCop: Long?,
+    val updatedAt: Long = System.currentTimeMillis()
 )

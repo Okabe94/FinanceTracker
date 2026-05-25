@@ -2,6 +2,7 @@ package com.software.financetracker.feature.investment.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.domain.model.investment.InvestmentMetrics
 import com.software.financetracker.domain.repository.ExchangeRateRepository
@@ -25,13 +26,46 @@ import kotlinx.coroutines.launch
 private data class InvestmentWithMetrics(
     val card: InvestmentCardUiModel,
     val currency: String,
-    val metrics: InvestmentMetrics
+    val metrics: InvestmentMetrics,
+    val createdDate: String,
+    val lastUpdatedDate: String?
 )
+
+private fun List<InvestmentWithMetrics>.applySorting(
+    field: SortField,
+    direction: SortDirection
+): List<InvestmentWithMetrics> = when (field) {
+    SortField.AMOUNT_INVESTED -> {
+        val sorted = sortedBy { it.metrics.totalInvestedMinorUnits }
+        if (direction == SortDirection.DESC) sorted.reversed() else sorted
+    }
+    SortField.ALPHABETICAL -> {
+        val sorted = sortedBy { it.card.name.lowercase() }
+        if (direction == SortDirection.DESC) sorted.reversed() else sorted
+    }
+    SortField.NEWEST -> {
+        val sorted = sortedBy { it.createdDate }
+        if (direction == SortDirection.DESC) sorted.reversed() else sorted
+    }
+    SortField.PERFORMANCE -> {
+        val (withReturn, withoutReturn) = partition { it.metrics.returnPercent != null }
+        val sorted = withReturn.sortedBy { it.metrics.returnPercent }
+        val directed = if (direction == SortDirection.DESC) sorted.reversed() else sorted
+        directed + withoutReturn
+    }
+    SortField.LAST_UPDATED -> {
+        val (withDate, withoutDate) = partition { it.lastUpdatedDate != null }
+        val sorted = withDate.sortedBy { it.lastUpdatedDate }
+        val directed = if (direction == SortDirection.DESC) sorted.reversed() else sorted
+        directed + withoutDate
+    }
+}
 
 class InvestmentListViewModel(
     private val investmentRepository: InvestmentRepository,
     private val entryRepository: InvestmentEntryRepository,
-    private val exchangeRateRepository: ExchangeRateRepository
+    private val exchangeRateRepository: ExchangeRateRepository,
+    private val prefs: UserPreferences
 ) : ViewModel() {
 
     private val _events = Channel<InvestmentListEvent>()
@@ -41,6 +75,13 @@ class InvestmentListViewModel(
     private val _currencyFilter = MutableStateFlow<String?>(null)
     private val _isRefreshingRates = MutableStateFlow(false)
     private val _showRatesBottomSheet = MutableStateFlow(false)
+    private val _showSortBottomSheet = MutableStateFlow(false)
+
+    private val _filterOptions = combine(_searchQuery, _currencyFilter) { q, c -> q to c }
+    private val _sortOptions = combine(
+        prefs.investmentSortField.map { runCatching { SortField.valueOf(it) }.getOrDefault(SortField.ALPHABETICAL) },
+        prefs.investmentSortDirection.map { runCatching { SortDirection.valueOf(it) }.getOrDefault(SortDirection.ASC) }
+    ) { field, dir -> field to dir }
 
     init {
         viewModelScope.launch {
@@ -72,7 +113,9 @@ class InvestmentListViewModel(
                                     isPositiveReturn = metrics.returnMinorUnits >= 0
                                 ),
                                 currency = inv.currency,
-                                metrics = metrics
+                                metrics = metrics,
+                                createdDate = inv.createdDate,
+                                lastUpdatedDate = sortedAsc.lastOrNull()?.date
                             )
                         }
                     }
@@ -82,10 +125,12 @@ class InvestmentListViewModel(
 
     val state = combine(
         _rawItems,
-        _searchQuery,
-        _currencyFilter,
+        _filterOptions,
+        _sortOptions,
         exchangeRateRepository.getAll()
-    ) { rawItems, searchQuery, currencyFilter, rateEntities ->
+    ) { rawItems, filterOptions, sortOptions, rateEntities ->
+        val (searchQuery, currencyFilter) = filterOptions
+        val (sortField, sortDirection) = sortOptions
         val rates = rateEntities.associate { it.fromCurrency to it.rate }
         val ratesUpdatedAt = rateEntities.maxByOrNull { it.updatedDate }?.updatedDate
 
@@ -123,6 +168,7 @@ class InvestmentListViewModel(
         val filtered = rawItems
             .filter { searchQuery.isBlank() || it.card.name.contains(searchQuery, ignoreCase = true) }
             .filter { currencyFilter == null || it.currency == currencyFilter }
+            .applySorting(sortField, sortDirection)
 
         InvestmentListState(
             isLoading = false,
@@ -134,12 +180,16 @@ class InvestmentListViewModel(
             activeCurrencyFilter = currencyFilter,
             totalCount = rawItems.size,
             rates = rates,
-            ratesUpdatedAt = ratesUpdatedAt
+            ratesUpdatedAt = ratesUpdatedAt,
+            sortField = sortField,
+            sortDirection = sortDirection
         )
     }.combine(_isRefreshingRates) { s, isRefreshing ->
         s.copy(isRefreshingRates = isRefreshing)
     }.combine(_showRatesBottomSheet) { s, show ->
         s.copy(showRatesBottomSheet = show)
+    }.combine(_showSortBottomSheet) { s, show ->
+        s.copy(showSortBottomSheet = show)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000L),
@@ -167,6 +217,12 @@ class InvestmentListViewModel(
             }
             InvestmentListAction.OnRatesBottomSheetToggled ->
                 _showRatesBottomSheet.update { !it }
+            InvestmentListAction.OnSortBottomSheetToggled ->
+                _showSortBottomSheet.update { !it }
+            is InvestmentListAction.OnSortChanged ->
+                viewModelScope.launch {
+                    prefs.setInvestmentSort(action.field.name, action.direction.name)
+                }
         }
     }
 }

@@ -19,6 +19,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +49,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.software.financetracker.R
 import com.software.financetracker.core.util.CurrencyHelper
+import com.software.financetracker.feature.home.HomeSortField
+import com.software.financetracker.feature.investment.list.SortDirection
+import com.software.financetracker.feature.investment.list.SortField
 import com.software.financetracker.ui.theme.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +92,10 @@ fun SettingsScreen(
             ExchangeRatesSection(state, onAction)
             HorizontalDivider()
             NotificationsSection(state, onAction)
+            HorizontalDivider()
+            HomeCategoriesSection(state, onAction)
+            HorizontalDivider()
+            InvestmentsSection(state, onAction)
             Spacer(Modifier.height(16.dp))
         }
     }
@@ -278,6 +287,149 @@ private fun NotificationsSection(state: SettingsState, onAction: (SettingsAction
                 checked = state.notificationsEnabled,
                 onCheckedChange = { onAction(SettingsAction.OnNotificationsToggle(it)) }
             )
+        }
+    }
+}
+
+@Composable
+private fun HomeSortField.label(): String = when (this) {
+    HomeSortField.ALPHABETICAL -> stringResource(R.string.home_sort_alphabetical)
+    HomeSortField.AMOUNT_SPENT -> stringResource(R.string.home_sort_amount_spent)
+    HomeSortField.BUDGET_LIMIT -> stringResource(R.string.home_sort_budget_limit)
+    HomeSortField.LAST_UPDATED -> stringResource(R.string.home_sort_last_updated)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeCategoriesSection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        SectionHeader(stringResource(R.string.settings_section_home))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.settings_home_sort_field_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            ExposedDropdownMenuBox(
+                expanded = state.showHomeSortDropdown,
+                onExpandedChange = { onAction(SettingsAction.OnHomeSortDropdownToggle) }
+            ) {
+                OutlinedTextField(
+                    value = state.homeSortField.label(),
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.showHomeSortDropdown)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = state.showHomeSortDropdown,
+                    onDismissRequest = { onAction(SettingsAction.OnHomeSortDropdownDismiss) }
+                ) {
+                    HomeSortField.entries.forEach { field ->
+                        DropdownMenuItem(
+                            text = { Text(field.label()) },
+                            onClick = { onAction(SettingsAction.OnHomeSortFieldSelected(field)) },
+                            trailingIcon = if (field == state.homeSortField) {
+                                { Text("✓", color = MaterialTheme.colorScheme.primary) }
+                            } else null
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.settings_home_sort_direction_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            val dirOptions = listOf(
+                SortDirection.ASC to stringResource(R.string.settings_investment_sort_asc),
+                SortDirection.DESC to stringResource(R.string.settings_investment_sort_desc)
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                dirOptions.forEachIndexed { index, (direction, label) ->
+                    SegmentedButton(
+                        selected = state.homeSortDirection == direction,
+                        onClick = { onAction(SettingsAction.OnHomeSortDirectionChange(direction)) },
+                        shape = SegmentedButtonDefaults.itemShape(index, dirOptions.size),
+                        label = { Text(label) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SortField.label(): String = when (this) {
+    SortField.AMOUNT_INVESTED -> stringResource(R.string.investment_list_sort_amount_invested)
+    SortField.PERFORMANCE -> stringResource(R.string.investment_list_sort_performance)
+    SortField.ALPHABETICAL -> stringResource(R.string.investment_list_sort_alphabetical)
+    SortField.NEWEST -> stringResource(R.string.investment_list_sort_newest)
+    SortField.LAST_UPDATED -> stringResource(R.string.investment_list_sort_last_updated)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InvestmentsSection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        SectionHeader(stringResource(R.string.settings_section_investments))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.settings_investment_sort_field_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            ExposedDropdownMenuBox(
+                expanded = state.showInvestmentSortDropdown,
+                onExpandedChange = { onAction(SettingsAction.OnInvestmentSortDropdownToggle) }
+            ) {
+                OutlinedTextField(
+                    value = state.investmentSortField.label(),
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = state.showInvestmentSortDropdown)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = state.showInvestmentSortDropdown,
+                    onDismissRequest = { onAction(SettingsAction.OnInvestmentSortDropdownDismiss) }
+                ) {
+                    SortField.entries.forEach { field ->
+                        DropdownMenuItem(
+                            text = { Text(field.label()) },
+                            onClick = { onAction(SettingsAction.OnInvestmentSortFieldSelected(field)) },
+                            trailingIcon = if (field == state.investmentSortField) {
+                                { Text("✓", color = MaterialTheme.colorScheme.primary) }
+                            } else null
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.settings_investment_sort_direction_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            val dirOptions = listOf(
+                SortDirection.ASC to stringResource(R.string.settings_investment_sort_asc),
+                SortDirection.DESC to stringResource(R.string.settings_investment_sort_desc)
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                dirOptions.forEachIndexed { index, (direction, label) ->
+                    SegmentedButton(
+                        selected = state.investmentSortDirection == direction,
+                        onClick = { onAction(SettingsAction.OnInvestmentSortDirectionChange(direction)) },
+                        shape = SegmentedButtonDefaults.itemShape(index, dirOptions.size),
+                        label = { Text(label) }
+                    )
+                }
+            }
         }
     }
 }

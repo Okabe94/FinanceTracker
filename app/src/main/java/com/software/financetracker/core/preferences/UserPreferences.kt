@@ -12,9 +12,16 @@ interface UserPreferences {
     val customEurRate: Flow<Float>
     val customGbpRate: Flow<Float>
 
+    val investmentSortField: Flow<String>
+    val investmentSortDirection: Flow<String>
+    val homeSortField: Flow<String>
+    val homeSortDirection: Flow<String>
+
     suspend fun setNotificationsEnabled(enabled: Boolean)
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setDefaultCurrency(currency: String)
     suspend fun setUseCustomExchangeRates(enabled: Boolean)
     suspend fun setCustomRates(usd: Float, eur: Float, gbp: Float)
+    suspend fun setInvestmentSort(field: String, direction: String)
+    suspend fun setHomeSort(field: String, direction: String)
 }

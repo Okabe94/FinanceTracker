@@ -2,6 +2,12 @@ package com.software.financetracker.feature.investment.list
 
 import com.software.financetracker.ui.components.DonutSlice
 
+enum class SortField {
+    AMOUNT_INVESTED, PERFORMANCE, ALPHABETICAL, NEWEST, LAST_UPDATED
+}
+
+enum class SortDirection { ASC, DESC }
+
 data class InvestmentCardUiModel(
     val id: Long,
     val name: String,
@@ -33,5 +39,8 @@ data class InvestmentListState(
     val rates: Map<String, Double> = emptyMap(),
     val ratesUpdatedAt: String? = null,
     val isRefreshingRates: Boolean = false,
-    val showRatesBottomSheet: Boolean = false
+    val showRatesBottomSheet: Boolean = false,
+    val sortField: SortField = SortField.ALPHABETICAL,
+    val sortDirection: SortDirection = SortDirection.ASC,
+    val showSortBottomSheet: Boolean = false
 )

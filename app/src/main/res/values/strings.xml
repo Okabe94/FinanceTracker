@@ -52,6 +52,11 @@
     <!-- FinanceTrackerFab -->
     <string name="fab_add_cd">Agregar</string>
 
+    <!-- Bottom navigation -->
+    <string name="nav_home">Gastos</string>
+    <string name="nav_investments">Inversiones</string>
+    <string name="nav_settings">Configuración</string>
+
     <!-- Home screen -->
     <string name="home_fab_metrics_cd">Ver métricas</string>
     <string name="home_fab_new_category">Nueva categoría</string>
@@ -63,6 +68,15 @@
     <string name="home_goals_view_all">Ver todas (%1$d)</string>
     <string name="home_goal_target_amount">Meta: %1$s</string>
     <string name="home_goal_deadline">Vence: %1$s</string>
+    <string name="home_categories_title">Categorías</string>
+    <string name="home_sort_cd">Ordenar categorías</string>
+    <string name="home_sort_title">Ordenar por</string>
+    <string name="home_sort_alphabetical">Alfabético</string>
+    <string name="home_sort_last_updated">Última actualización</string>
+    <string name="home_sort_amount_spent">Monto gastado</string>
+    <string name="home_sort_budget_limit">Límite de presupuesto</string>
+    <string name="home_sort_asc_cd">Ascendente</string>
+    <string name="home_sort_desc_cd">Descendente</string>
 
     <!-- SummaryCard -->
     <string name="summary_card_title">Gastado este mes</string>
@@ -180,6 +194,27 @@
     <string name="investment_list_rates_no_data">Sin datos. Toca Actualizar para obtener tasas.</string>
     <string name="investment_list_search_placeholder">Buscar inversión…</string>
     <string name="investment_list_empty_search">Sin resultados</string>
+    <string name="investment_list_sort_cd">Ordenar inversiones</string>
+    <string name="investment_list_sort_title">Ordenar por</string>
+    <string name="investment_list_sort_amount_invested">Monto invertido</string>
+    <string name="investment_list_sort_performance">Rendimiento</string>
+    <string name="investment_list_sort_alphabetical">Alfabético</string>
+    <string name="investment_list_sort_newest">Más reciente</string>
+    <string name="investment_list_sort_last_updated">Última actualización</string>
+    <string name="investment_list_sort_asc_cd">Ascendente</string>
+    <string name="investment_list_sort_desc_cd">Descendente</string>
+
+    <!-- Settings screen - Home section -->
+    <string name="settings_section_home">Inicio</string>
+    <string name="settings_home_sort_field_label">Ordenar categorías por defecto</string>
+    <string name="settings_home_sort_direction_label">Dirección</string>
+
+    <!-- Settings screen - Investments section -->
+    <string name="settings_section_investments">Inversiones</string>
+    <string name="settings_investment_sort_field_label">Ordenar por defecto</string>
+    <string name="settings_investment_sort_direction_label">Dirección</string>
+    <string name="settings_investment_sort_asc">Asc</string>
+    <string name="settings_investment_sort_desc">Desc</string>
 
     <!-- InvestmentEntryForm screen -->
     <string name="investment_entry_title_new">Nuevo movimiento</string>

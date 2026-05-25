@@ -8,7 +8,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val investmentModule = module {
-    viewModel { InvestmentListViewModel(get(), get(), get()) }
+    viewModel { InvestmentListViewModel(get(), get(), get(), get()) }
     viewModel { params -> InvestmentDetailViewModel(params.get(), get(), get()) }
     viewModel { params -> InvestmentFormViewModel(params.get(), get(), get()) }
     viewModel { params -> InvestmentEntryFormViewModel(params.get(), get(), get()) }

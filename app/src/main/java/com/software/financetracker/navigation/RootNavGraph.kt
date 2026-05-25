@@ -19,6 +19,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.software.financetracker.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -58,7 +60,7 @@ fun RootNavGraph(navController: NavHostController = rememberNavController()) {
                         }
                     },
                     icon = { Icon(Icons.Rounded.AccountBalanceWallet, contentDescription = null) },
-                    label = { Text("Gastos") }
+                    label = { Text(stringResource(R.string.nav_home)) }
                 )
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute(InvestmentListRoute::class) } == true,
@@ -72,7 +74,7 @@ fun RootNavGraph(navController: NavHostController = rememberNavController()) {
                         }
                     },
                     icon = { Icon(Icons.Rounded.TrendingUp, contentDescription = null) },
-                    label = { Text("Inversiones") }
+                    label = { Text(stringResource(R.string.nav_investments)) }
                 )
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute(SettingsRoute::class) } == true,
@@ -86,7 +88,7 @@ fun RootNavGraph(navController: NavHostController = rememberNavController()) {
                         }
                     },
                     icon = { Icon(Icons.Rounded.Settings, contentDescription = null) },
-                    label = { Text("Configuración") }
+                    label = { Text(stringResource(R.string.nav_settings)) }
                 )
             }
         }

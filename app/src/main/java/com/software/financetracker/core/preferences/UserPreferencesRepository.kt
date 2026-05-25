@@ -22,6 +22,10 @@ class UserPreferencesRepository(private val context: Context) : UserPreferences 
     private val customUsdRateKey = floatPreferencesKey("custom_usd_rate")
     private val customEurRateKey = floatPreferencesKey("custom_eur_rate")
     private val customGbpRateKey = floatPreferencesKey("custom_gbp_rate")
+    private val investmentSortFieldKey = stringPreferencesKey("investment_sort_field")
+    private val investmentSortDirectionKey = stringPreferencesKey("investment_sort_direction")
+    private val homeSortFieldKey = stringPreferencesKey("home_sort_field")
+    private val homeSortDirectionKey = stringPreferencesKey("home_sort_direction")
 
     override val notificationsEnabled: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[notificationsEnabledKey] ?: true }
@@ -50,6 +54,18 @@ class UserPreferencesRepository(private val context: Context) : UserPreferences 
     override val customGbpRate: Flow<Float> = context.dataStore.data
         .map { prefs -> prefs[customGbpRateKey] ?: 0f }
 
+    override val investmentSortField: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[investmentSortFieldKey] ?: "ALPHABETICAL" }
+
+    override val investmentSortDirection: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[investmentSortDirectionKey] ?: "ASC" }
+
+    override val homeSortField: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[homeSortFieldKey] ?: "ALPHABETICAL" }
+
+    override val homeSortDirection: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[homeSortDirectionKey] ?: "ASC" }
+
     override suspend fun setNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs -> prefs[notificationsEnabledKey] = enabled }
     }
@@ -77,6 +93,20 @@ class UserPreferencesRepository(private val context: Context) : UserPreferences 
             prefs[customUsdRateKey] = usd
             prefs[customEurRateKey] = eur
             prefs[customGbpRateKey] = gbp
+        }
+    }
+
+    override suspend fun setInvestmentSort(field: String, direction: String) {
+        context.dataStore.edit { prefs ->
+            prefs[investmentSortFieldKey] = field
+            prefs[investmentSortDirectionKey] = direction
+        }
+    }
+
+    override suspend fun setHomeSort(field: String, direction: String) {
+        context.dataStore.edit { prefs ->
+            prefs[homeSortFieldKey] = field
+            prefs[homeSortDirectionKey] = direction
         }
     }
 }

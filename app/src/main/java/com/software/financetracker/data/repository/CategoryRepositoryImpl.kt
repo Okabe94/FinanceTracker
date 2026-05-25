@@ -30,10 +30,11 @@ class CategoryRepositoryImpl(private val dao: CategoryDao) : CategoryRepository 
 
     override suspend fun upsert(entity: CategoryEntity): Result<Long, DataError.Local> =
         try {
+            val stamped = entity.copy(updatedAt = System.currentTimeMillis())
             if (entity.id == 0L) {
-                Result.Success(dao.insert(entity))
+                Result.Success(dao.insert(stamped))
             } else {
-                dao.update(entity)
+                dao.update(stamped)
                 Result.Success(entity.id)
             }
         } catch (e: Exception) {

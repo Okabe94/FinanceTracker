@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,30 +18,37 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Receipt
 import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.Sort
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +67,7 @@ import com.software.financetracker.feature.home.components.CategoryCard
 import com.software.financetracker.feature.home.components.IncomeCard
 import com.software.financetracker.feature.home.components.SummaryCard
 import com.software.financetracker.feature.home.components.formatCop
+import com.software.financetracker.feature.investment.list.SortDirection
 import com.software.financetracker.ui.components.MonthSelector
 import com.software.financetracker.ui.theme.Shapes
 
@@ -173,6 +182,17 @@ fun HomeScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
+        if (state.showSortBottomSheet) {
+            HomeSortBottomSheet(
+                sortField = state.sortField,
+                sortDirection = state.sortDirection,
+                onDismiss = { onAction(HomeAction.OnSortBottomSheetToggled) },
+                onSortChanged = { field, direction ->
+                    onAction(HomeAction.OnSortChanged(field, direction))
+                }
+            )
+        }
+
         val contentState = when {
             state.isLoading -> 0
             state.categories.isEmpty() -> 1
@@ -263,11 +283,100 @@ fun HomeScreen(
                         }
                     }
 
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.home_categories_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            IconButton(onClick = { onAction(HomeAction.OnSortBottomSheetToggled) }) {
+                                Icon(
+                                    Icons.Rounded.Sort,
+                                    contentDescription = stringResource(R.string.home_sort_cd)
+                                )
+                            }
+                        }
+                    }
+
                     items(state.categories, key = { it.id }) { category ->
                         CategoryCard(
                             category = category,
                             onClick = { onAction(HomeAction.OnCategoryClick(category.id)) },
                             modifier = Modifier.animateItem()
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeSortField.label(): String = when (this) {
+    HomeSortField.ALPHABETICAL -> stringResource(R.string.home_sort_alphabetical)
+    HomeSortField.AMOUNT_SPENT -> stringResource(R.string.home_sort_amount_spent)
+    HomeSortField.BUDGET_LIMIT -> stringResource(R.string.home_sort_budget_limit)
+    HomeSortField.LAST_UPDATED -> stringResource(R.string.home_sort_last_updated)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeSortBottomSheet(
+    sortField: HomeSortField,
+    sortDirection: SortDirection,
+    onDismiss: () -> Unit,
+    onSortChanged: (HomeSortField, SortDirection) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+        ) {
+            Text(
+                stringResource(R.string.home_sort_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            HomeSortField.entries.forEach { field ->
+                val isSelected = sortField == field
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(Shapes.medium)
+                        .clickable {
+                            val newDir = if (isSelected && sortDirection == SortDirection.ASC)
+                                SortDirection.DESC else SortDirection.ASC
+                            onSortChanged(field, newDir)
+                        }
+                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        field.label(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                    if (isSelected) {
+                        Icon(
+                            imageVector = if (sortDirection == SortDirection.ASC)
+                                Icons.Rounded.ArrowUpward else Icons.Rounded.ArrowDownward,
+                            contentDescription = stringResource(
+                                if (sortDirection == SortDirection.ASC)
+                                    R.string.home_sort_asc_cd
+                                else R.string.home_sort_desc_cd
+                            ),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }

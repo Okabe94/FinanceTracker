@@ -1,5 +1,7 @@
 package com.software.financetracker.feature.home
 
+import com.software.financetracker.feature.investment.list.SortDirection
+
 sealed interface HomeAction {
     data object OnPreviousMonthClick : HomeAction
     data object OnNextMonthClick : HomeAction
@@ -13,4 +15,6 @@ sealed interface HomeAction {
     data object OnIncomeCardClick : HomeAction
     data class OnGoalCardClick(val goalId: Long) : HomeAction
     data object OnViewAllGoalsClick : HomeAction
+    data object OnSortBottomSheetToggled : HomeAction
+    data class OnSortChanged(val field: HomeSortField, val direction: SortDirection) : HomeAction
 }

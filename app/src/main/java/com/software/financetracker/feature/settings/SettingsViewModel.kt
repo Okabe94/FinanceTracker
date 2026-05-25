@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.data.local.investment.ExchangeRateEntity
 import com.software.financetracker.domain.repository.ExchangeRateRepository
+import com.software.financetracker.feature.home.HomeSortField
+import com.software.financetracker.feature.investment.list.SortDirection
+import com.software.financetracker.feature.investment.list.SortField
 import com.software.financetracker.ui.theme.ThemeMode
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +47,30 @@ class SettingsViewModel(
                     isLoading = false
                 )
             }.collect { newState -> _state.value = newState }
+        }
+
+        viewModelScope.launch {
+            combine(
+                prefs.investmentSortField,
+                prefs.investmentSortDirection
+            ) { field, dir ->
+                runCatching { SortField.valueOf(field) }.getOrDefault(SortField.ALPHABETICAL) to
+                        runCatching { SortDirection.valueOf(dir) }.getOrDefault(SortDirection.ASC)
+            }.collect { (field, dir) ->
+                _state.update { it.copy(investmentSortField = field, investmentSortDirection = dir) }
+            }
+        }
+
+        viewModelScope.launch {
+            combine(
+                prefs.homeSortField,
+                prefs.homeSortDirection
+            ) { field, dir ->
+                runCatching { HomeSortField.valueOf(field) }.getOrDefault(HomeSortField.ALPHABETICAL) to
+                        runCatching { SortDirection.valueOf(dir) }.getOrDefault(SortDirection.ASC)
+            }.collect { (field, dir) ->
+                _state.update { it.copy(homeSortField = field, homeSortDirection = dir) }
+            }
         }
 
         viewModelScope.launch {
@@ -114,6 +141,40 @@ class SettingsViewModel(
 
             is SettingsAction.OnNotificationsToggle ->
                 viewModelScope.launch { prefs.setNotificationsEnabled(action.enabled) }
+
+            is SettingsAction.OnInvestmentSortFieldSelected ->
+                viewModelScope.launch {
+                    prefs.setInvestmentSort(action.field.name, _state.value.investmentSortDirection.name)
+                    _state.update { it.copy(showInvestmentSortDropdown = false) }
+                }
+
+            SettingsAction.OnInvestmentSortDropdownToggle ->
+                _state.update { it.copy(showInvestmentSortDropdown = !it.showInvestmentSortDropdown) }
+
+            SettingsAction.OnInvestmentSortDropdownDismiss ->
+                _state.update { it.copy(showInvestmentSortDropdown = false) }
+
+            is SettingsAction.OnInvestmentSortDirectionChange ->
+                viewModelScope.launch {
+                    prefs.setInvestmentSort(_state.value.investmentSortField.name, action.direction.name)
+                }
+
+            is SettingsAction.OnHomeSortFieldSelected ->
+                viewModelScope.launch {
+                    prefs.setHomeSort(action.field.name, _state.value.homeSortDirection.name)
+                    _state.update { it.copy(showHomeSortDropdown = false) }
+                }
+
+            SettingsAction.OnHomeSortDropdownToggle ->
+                _state.update { it.copy(showHomeSortDropdown = !it.showHomeSortDropdown) }
+
+            SettingsAction.OnHomeSortDropdownDismiss ->
+                _state.update { it.copy(showHomeSortDropdown = false) }
+
+            is SettingsAction.OnHomeSortDirectionChange ->
+                viewModelScope.launch {
+                    prefs.setHomeSort(_state.value.homeSortField.name, action.direction.name)
+                }
         }
     }
 

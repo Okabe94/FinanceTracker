@@ -21,7 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Sort
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Button
@@ -70,6 +73,12 @@ fun InvestmentListScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.investment_list_title)) },
                 actions = {
+                    IconButton(onClick = { onAction(InvestmentListAction.OnSortBottomSheetToggled) }) {
+                        Icon(
+                            Icons.Rounded.Sort,
+                            contentDescription = stringResource(R.string.investment_list_sort_cd)
+                        )
+                    }
                     IconButton(onClick = { onAction(InvestmentListAction.OnRatesBottomSheetToggled) }) {
                         Icon(
                             Icons.Rounded.Tune,
@@ -99,6 +108,17 @@ fun InvestmentListScreen(
                 isRefreshing = state.isRefreshingRates,
                 onDismiss = { onAction(InvestmentListAction.OnRatesBottomSheetToggled) },
                 onRefresh = { onAction(InvestmentListAction.RefreshRates) }
+            )
+        }
+
+        if (state.showSortBottomSheet) {
+            SortBottomSheet(
+                sortField = state.sortField,
+                sortDirection = state.sortDirection,
+                onDismiss = { onAction(InvestmentListAction.OnSortBottomSheetToggled) },
+                onSortChanged = { field, direction ->
+                    onAction(InvestmentListAction.OnSortChanged(field, direction))
+                }
             )
         }
 
@@ -350,6 +370,76 @@ private fun ExchangeRatesBottomSheet(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+private fun SortField.label(): String = when (this) {
+    SortField.AMOUNT_INVESTED -> stringResource(R.string.investment_list_sort_amount_invested)
+    SortField.PERFORMANCE -> stringResource(R.string.investment_list_sort_performance)
+    SortField.ALPHABETICAL -> stringResource(R.string.investment_list_sort_alphabetical)
+    SortField.NEWEST -> stringResource(R.string.investment_list_sort_newest)
+    SortField.LAST_UPDATED -> stringResource(R.string.investment_list_sort_last_updated)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortBottomSheet(
+    sortField: SortField,
+    sortDirection: SortDirection,
+    onDismiss: () -> Unit,
+    onSortChanged: (SortField, SortDirection) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+        ) {
+            Text(
+                stringResource(R.string.investment_list_sort_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            SortField.entries.forEach { field ->
+                val isSelected = sortField == field
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(Shapes.medium)
+                        .clickable {
+                            val newDir = if (isSelected && sortDirection == SortDirection.ASC)
+                                SortDirection.DESC else SortDirection.ASC
+                            onSortChanged(field, newDir)
+                        }
+                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        field.label(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                    if (isSelected) {
+                        Icon(
+                            imageVector = if (sortDirection == SortDirection.ASC)
+                                Icons.Rounded.ArrowUpward else Icons.Rounded.ArrowDownward,
+                            contentDescription = stringResource(
+                                if (sortDirection == SortDirection.ASC)
+                                    R.string.investment_list_sort_asc_cd
+                                else R.string.investment_list_sort_desc_cd
+                            ),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -39,7 +39,8 @@ val dataModule = module {
             FinanceDatabase.MIGRATION_4_5,
             FinanceDatabase.MIGRATION_5_6,
             FinanceDatabase.MIGRATION_6_7,
-            FinanceDatabase.MIGRATION_7_8
+            FinanceDatabase.MIGRATION_7_8,
+            FinanceDatabase.MIGRATION_8_9
         ).build()
     }
     single { get<FinanceDatabase>().categoryDao() }

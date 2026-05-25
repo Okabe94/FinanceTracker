@@ -2,6 +2,7 @@ package com.software.financetracker.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.core.util.DateUtil
 import com.software.financetracker.data.local.goal.GoalEntity
 import com.software.financetracker.domain.repository.CategoryRepository
@@ -9,6 +10,7 @@ import com.software.financetracker.domain.repository.ExpenseRepository
 import com.software.financetracker.domain.repository.GoalRepository
 import com.software.financetracker.domain.repository.IncomeRepository
 import com.software.financetracker.feature.goal.list.GoalUiModel
+import com.software.financetracker.feature.investment.list.SortDirection
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -26,12 +29,19 @@ class HomeViewModel(
     private val categoryRepository: CategoryRepository,
     private val expenseRepository: ExpenseRepository,
     private val incomeRepository: IncomeRepository,
-    private val goalRepository: GoalRepository
+    private val goalRepository: GoalRepository,
+    private val prefs: UserPreferences
 ) : ViewModel() {
 
     private val _selectedMonth = MutableStateFlow(DateUtil.currentYearMonth())
+    private val _showSortBottomSheet = MutableStateFlow(false)
     private val _events = Channel<HomeEvent>()
     val events = _events.receiveAsFlow()
+
+    private val _sortOptions = combine(
+        prefs.homeSortField.map { runCatching { HomeSortField.valueOf(it) }.getOrDefault(HomeSortField.ALPHABETICAL) },
+        prefs.homeSortDirection.map { runCatching { SortDirection.valueOf(it) }.getOrDefault(SortDirection.ASC) }
+    ) { field, dir -> field to dir }
 
     val state = combine(
         _selectedMonth.flatMapLatest { month ->
@@ -53,7 +63,8 @@ class HomeViewModel(
                         iconKey = cat.iconKey,
                         amountSpent = spent,
                         monthlyLimit = cat.monthlyLimitCop,
-                        isOverLimit = cat.monthlyLimitCop != null && spent > cat.monthlyLimitCop
+                        isOverLimit = cat.monthlyLimitCop != null && spent > cat.monthlyLimitCop,
+                        updatedAt = cat.updatedAt
                     )
                 }
                 val limitedCats = uiModels.filter { it.monthlyLimit != null }
@@ -73,14 +84,16 @@ class HomeViewModel(
                 )
             }
         },
-        goalRepository.observeActive()
-    ) { (month, uiModels, partial), activeGoals ->
+        goalRepository.observeActive(),
+        _sortOptions
+    ) { (month, uiModels, partial), activeGoals, sortOptions ->
+        val (sortField, sortDirection) = sortOptions
         val goalUiModels = activeGoals.map { it.toGoalUiModel() }
         HomeState(
             selectedMonth = month,
             displayMonth = DateUtil.formatMonth(month),
             isCurrentMonth = month == DateUtil.currentYearMonth(),
-            categories = uiModels,
+            categories = uiModels.applySorting(sortField, sortDirection),
             totalSpent = partial.totalSpent,
             totalLimit = partial.totalLimit,
             hasAnyLimit = partial.hasAnyLimit,
@@ -89,8 +102,12 @@ class HomeViewModel(
             netBalanceCop = partial.netBalanceCop,
             hasIncomeData = partial.hasIncomeData,
             activeGoals = goalUiModels,
-            hasGoals = goalUiModels.isNotEmpty()
+            hasGoals = goalUiModels.isNotEmpty(),
+            sortField = sortField,
+            sortDirection = sortDirection
         )
+    }.combine(_showSortBottomSheet) { s, show ->
+        s.copy(showSortBottomSheet = show)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), HomeState())
 
     fun onAction(action: HomeAction) {
@@ -121,7 +138,37 @@ class HomeViewModel(
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToGoalDetail(action.goalId)) }
             HomeAction.OnViewAllGoalsClick ->
                 viewModelScope.launch { _events.send(HomeEvent.NavigateToGoalList) }
+            HomeAction.OnSortBottomSheetToggled ->
+                _showSortBottomSheet.update { !it }
+            is HomeAction.OnSortChanged ->
+                viewModelScope.launch {
+                    prefs.setHomeSort(action.field.name, action.direction.name)
+                }
         }
+    }
+}
+
+private fun List<CategoryUiModel>.applySorting(
+    field: HomeSortField,
+    direction: SortDirection
+): List<CategoryUiModel> = when (field) {
+    HomeSortField.ALPHABETICAL -> {
+        val sorted = sortedBy { it.name.lowercase() }
+        if (direction == SortDirection.DESC) sorted.reversed() else sorted
+    }
+    HomeSortField.AMOUNT_SPENT -> {
+        val sorted = sortedBy { it.amountSpent }
+        if (direction == SortDirection.DESC) sorted.reversed() else sorted
+    }
+    HomeSortField.BUDGET_LIMIT -> {
+        val (withLimit, withoutLimit) = partition { it.monthlyLimit != null }
+        val sorted = withLimit.sortedBy { it.monthlyLimit }
+        val directed = if (direction == SortDirection.DESC) sorted.reversed() else sorted
+        directed + withoutLimit
+    }
+    HomeSortField.LAST_UPDATED -> {
+        val sorted = sortedBy { it.updatedAt }
+        if (direction == SortDirection.DESC) sorted.reversed() else sorted
     }
 }
 

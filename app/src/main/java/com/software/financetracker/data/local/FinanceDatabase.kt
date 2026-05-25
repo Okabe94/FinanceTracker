@@ -38,7 +38,7 @@ import com.software.financetracker.data.local.recurring.RecurringExpenseEntity
         GoalEntity::class,
         RecurringIncomeEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -181,6 +181,12 @@ abstract class FinanceDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_recurring_income_nextDueDate` ON `recurring_income`(`nextDueDate`)")
                 db.execSQL("ALTER TABLE `income` ADD COLUMN `recurringIncomeId` INTEGER DEFAULT NULL")
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `categories` ADD COLUMN `updatedAt` INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

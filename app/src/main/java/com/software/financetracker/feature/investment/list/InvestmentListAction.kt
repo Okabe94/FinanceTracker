@@ -7,4 +7,6 @@ sealed interface InvestmentListAction {
     data class OnCurrencyFilterChanged(val currency: String?) : InvestmentListAction
     data object RefreshRates : InvestmentListAction
     data object OnRatesBottomSheetToggled : InvestmentListAction
+    data object OnSortBottomSheetToggled : InvestmentListAction
+    data class OnSortChanged(val field: SortField, val direction: SortDirection) : InvestmentListAction
 }
