@@ -16,7 +16,8 @@ data class InvestmentCardUiModel(
     val iconKey: String,
     val currentValueFormatted: String,
     val returnPercent: Float?,
-    val isPositiveReturn: Boolean
+    val isPositiveReturn: Boolean,
+    val dividendsFormatted: String? = null
 )
 
 data class PortfolioSummary(
@@ -24,7 +25,8 @@ data class PortfolioSummary(
     val totalInvestedMinorUnits: Long,
     val returnMinorUnits: Long,
     val returnPercent: Float?,
-    val isCopOnly: Boolean
+    val isCopOnly: Boolean,
+    val totalDividendsMinorUnits: Long = 0L
 )
 
 data class InvestmentListState(

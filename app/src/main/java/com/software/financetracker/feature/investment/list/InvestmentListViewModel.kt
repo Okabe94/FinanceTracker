@@ -31,6 +31,13 @@ private data class InvestmentWithMetrics(
     val lastUpdatedDate: String?
 )
 
+private data class ItemCopValues(
+    val item: InvestmentWithMetrics,
+    val copValue: Long,
+    val copInvested: Long,
+    val copDividends: Long
+)
+
 private fun List<InvestmentWithMetrics>.applySorting(
     field: SortField,
     direction: SortDirection
@@ -110,7 +117,10 @@ class InvestmentListViewModel(
                                         metrics.currentValueMinorUnits, inv.currency
                                     ),
                                     returnPercent = metrics.returnPercent,
-                                    isPositiveReturn = metrics.returnMinorUnits >= 0
+                                    isPositiveReturn = metrics.returnMinorUnits >= 0,
+                                    dividendsFormatted = if (metrics.dividendsTotalMinorUnits > 0L)
+                                        CurrencyHelper.format(metrics.dividendsTotalMinorUnits, inv.currency)
+                                    else null
                                 ),
                                 currency = inv.currency,
                                 metrics = metrics,
@@ -138,15 +148,20 @@ class InvestmentListViewModel(
         val itemsWithCopValue = rawItems.mapNotNull { item ->
             val copValue = CurrencyHelper.convertToCop(item.metrics.currentValueMinorUnits, item.currency, rates)
             val copInvested = CurrencyHelper.convertToCop(item.metrics.totalInvestedMinorUnits, item.currency, rates)
-            if (copValue != null && copInvested != null) Triple(item, copValue, copInvested) else null
+            if (copValue != null && copInvested != null) {
+                val copDividends = CurrencyHelper.convertToCop(
+                    item.metrics.dividendsTotalMinorUnits, item.currency, rates) ?: 0L
+                ItemCopValues(item, copValue, copInvested, copDividends)
+            } else null
         }
         val portfolioSummary = if (itemsWithCopValue.isNotEmpty()) {
-            val totalValue = itemsWithCopValue.sumOf { it.second }
-            val totalInvested = itemsWithCopValue.sumOf { it.third }
-            val returnAmount = totalValue - totalInvested
-            val returnPercent = if (totalInvested > 0L)
+            val totalValue     = itemsWithCopValue.sumOf { it.copValue }
+            val totalInvested  = itemsWithCopValue.sumOf { it.copInvested }
+            val totalDividends = itemsWithCopValue.sumOf { it.copDividends }
+            val returnAmount   = totalValue - totalInvested
+            val returnPercent  = if (totalInvested > 0L)
                 (returnAmount.toFloat() / totalInvested.toFloat()) * 100f else null
-            PortfolioSummary(totalValue, totalInvested, returnAmount, returnPercent, allCop)
+            PortfolioSummary(totalValue, totalInvested, returnAmount, returnPercent, allCop, totalDividends)
         } else null
 
         val totalCurrentValue = rawItems.sumOf { it.metrics.currentValueMinorUnits.toDouble() }.toFloat()

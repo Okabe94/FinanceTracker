@@ -15,10 +15,16 @@ class FakeUserPreferencesRepository : UserPreferences {
     override val customUsdRate: Flow<Float> = MutableStateFlow(0f)
     override val customEurRate: Flow<Float> = MutableStateFlow(0f)
     override val customGbpRate: Flow<Float> = MutableStateFlow(0f)
+    override val investmentSortField: Flow<String> = MutableStateFlow("ALPHABETICAL")
+    override val investmentSortDirection: Flow<String> = MutableStateFlow("ASC")
+    override val homeSortField: Flow<String> = MutableStateFlow("ALPHABETICAL")
+    override val homeSortDirection: Flow<String> = MutableStateFlow("ASC")
 
     override suspend fun setNotificationsEnabled(enabled: Boolean) {}
     override suspend fun setThemeMode(mode: ThemeMode) {}
     override suspend fun setDefaultCurrency(currency: String) {}
     override suspend fun setUseCustomExchangeRates(enabled: Boolean) {}
     override suspend fun setCustomRates(usd: Float, eur: Float, gbp: Float) {}
+    override suspend fun setInvestmentSort(field: String, direction: String) {}
+    override suspend fun setHomeSort(field: String, direction: String) {}
 }

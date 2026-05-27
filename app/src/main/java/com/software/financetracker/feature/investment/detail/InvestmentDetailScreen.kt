@@ -78,6 +78,7 @@ import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.software.financetracker.R
 import com.software.financetracker.core.util.CurrencyHelper
 import com.software.financetracker.ui.components.iconForKey
+import com.software.financetracker.ui.theme.GreenAccent
 import com.software.financetracker.ui.theme.Shapes
 
 private val benchmarkRates = listOf(
@@ -153,7 +154,9 @@ fun InvestmentDetailScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onAction(InvestmentDetailAction.OnAddEntryClick) },
-                shape = Shapes.medium
+                shape = Shapes.medium,
+                containerColor = GreenAccent,
+                contentColor = Color.White
             ) {
                 Icon(
                     Icons.Rounded.Add,

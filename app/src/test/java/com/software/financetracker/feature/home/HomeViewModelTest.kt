@@ -11,6 +11,7 @@ import com.software.financetracker.fake.FakeCategoryRepository
 import com.software.financetracker.fake.FakeExpenseRepository
 import com.software.financetracker.fake.FakeGoalRepository
 import com.software.financetracker.fake.FakeIncomeRepository
+import com.software.financetracker.fake.FakeUserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -33,6 +34,7 @@ class HomeViewModelTest {
     private lateinit var expenseRepository: FakeExpenseRepository
     private lateinit var incomeRepository: FakeIncomeRepository
     private lateinit var goalRepository: FakeGoalRepository
+    private lateinit var fakePrefs: FakeUserPreferencesRepository
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private val sampleGoal = GoalEntity(
@@ -52,6 +54,7 @@ class HomeViewModelTest {
         expenseRepository = FakeExpenseRepository()
         incomeRepository = FakeIncomeRepository()
         goalRepository = FakeGoalRepository()
+        fakePrefs = FakeUserPreferencesRepository()
     }
 
     @After
@@ -60,7 +63,7 @@ class HomeViewModelTest {
     }
 
     private fun buildViewModel(): HomeViewModel =
-        HomeViewModel(categoryRepository, expenseRepository, incomeRepository, goalRepository)
+        HomeViewModel(categoryRepository, expenseRepository, incomeRepository, goalRepository, fakePrefs)
 
     @Test
     fun `givenActiveGoals_emitsGoalsInState`() = runTest {

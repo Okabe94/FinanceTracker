@@ -505,6 +505,24 @@ private fun PortfolioSummaryCard(summary: PortfolioSummary) {
                     color = returnColor
                 )
             }
+            if (summary.totalDividendsMinorUnits > 0L) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        stringResource(R.string.investment_list_dividends_label),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = onContainer.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        CurrencyHelper.format(summary.totalDividendsMinorUnits, "COP"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFF59300)
+                    )
+                }
+            }
             if (!summary.isCopOnly) {
                 Text(
                     stringResource(R.string.investment_list_cop_only_note),
@@ -556,7 +574,10 @@ private fun InvestmentCard(card: InvestmentCardUiModel, onClick: () -> Unit) {
                 )
             }
             Spacer(Modifier.width(8.dp))
-            Column(horizontalAlignment = Alignment.End) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     card.currentValueFormatted,
                     style = MaterialTheme.typography.bodyLarge,
@@ -583,6 +604,20 @@ private fun InvestmentCard(card: InvestmentCardUiModel, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                card.dividendsFormatted?.let { formatted ->
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFFF59300).copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = formatted,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFFF59300),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }

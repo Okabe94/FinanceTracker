@@ -188,6 +188,7 @@
     <string name="investment_list_portfolio">PORTAFOLIO</string>
     <string name="investment_list_invested_label">Invertido</string>
     <string name="investment_list_return_label">Retorno</string>
+    <string name="investment_list_dividends_label">Dividendos</string>
     <string name="investment_list_cop_only_note">* solo inversiones en COP</string>
     <string name="investment_list_rates_title">Tasas de cambio</string>
     <string name="investment_list_rates_updated_at">Actualizada: %1$s</string>
