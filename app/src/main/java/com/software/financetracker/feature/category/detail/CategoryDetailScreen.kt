@@ -176,6 +176,12 @@ fun CategoryDetailScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
+                    } else {
+                        Text(
+                            text = stringResource(R.string.category_card_no_limit),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.5f)
+                        )
                     }
                 }
             }
