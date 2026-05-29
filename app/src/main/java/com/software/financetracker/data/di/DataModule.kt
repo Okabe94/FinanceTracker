@@ -3,6 +3,7 @@ package com.software.financetracker.data.di
 import androidx.room.Room
 import com.software.financetracker.core.preferences.UserPreferences
 import com.software.financetracker.core.preferences.UserPreferencesRepository
+import com.software.financetracker.data.local.DatabaseSeeder
 import com.software.financetracker.data.local.FinanceDatabase
 import com.software.financetracker.data.repository.CategoryRepositoryImpl
 import com.software.financetracker.data.repository.ExpenseRepositoryImpl
@@ -41,7 +42,9 @@ val dataModule = module {
             FinanceDatabase.MIGRATION_6_7,
             FinanceDatabase.MIGRATION_7_8,
             FinanceDatabase.MIGRATION_8_9
-        ).build()
+        )
+//            .addCallback(DatabaseSeeder)
+            .build()
     }
     single { get<FinanceDatabase>().categoryDao() }
     single { get<FinanceDatabase>().expenseDao() }
