@@ -1,6 +1,7 @@
 package com.software.financetracker.data.local.income
 
 import androidx.room.*
+import androidx.room.OnConflictStrategy
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,4 +26,13 @@ interface IncomeDao {
 
     @Query("SELECT * FROM income WHERE id = :id")
     suspend fun getById(id: Long): IncomeEntity?
+
+    @Query("SELECT * FROM income")
+    suspend fun getAll(): List<IncomeEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<IncomeEntity>)
+
+    @Query("DELETE FROM income")
+    suspend fun deleteAll()
 }

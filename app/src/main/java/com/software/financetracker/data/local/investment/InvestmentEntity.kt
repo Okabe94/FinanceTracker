@@ -2,7 +2,9 @@ package com.software.financetracker.data.local.investment
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "investments")
 data class InvestmentEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

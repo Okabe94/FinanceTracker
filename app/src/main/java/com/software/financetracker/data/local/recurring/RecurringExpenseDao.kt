@@ -3,6 +3,7 @@ package com.software.financetracker.data.local.recurring
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -21,12 +22,21 @@ interface RecurringExpenseDao {
     @Query("SELECT * FROM recurring_expenses WHERE id = :id")
     suspend fun getById(id: Long): RecurringExpenseEntity?
 
+    @Query("SELECT * FROM recurring_expenses")
+    suspend fun getAll(): List<RecurringExpenseEntity>
+
     @Insert
     suspend fun insert(entity: RecurringExpenseEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<RecurringExpenseEntity>)
 
     @Update
     suspend fun update(entity: RecurringExpenseEntity)
 
     @Delete
     suspend fun delete(entity: RecurringExpenseEntity)
+
+    @Query("DELETE FROM recurring_expenses")
+    suspend fun deleteAll()
 }

@@ -175,6 +175,9 @@ class SettingsViewModel(
                 viewModelScope.launch {
                     prefs.setHomeSort(_state.value.homeSortField.name, action.direction.name)
                 }
+
+            SettingsAction.OnNavigateToBackup ->
+                viewModelScope.launch { _events.send(SettingsEvent.NavigateToBackup) }
         }
     }
 

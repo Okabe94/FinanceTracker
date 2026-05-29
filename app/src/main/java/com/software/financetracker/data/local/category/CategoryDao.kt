@@ -3,6 +3,7 @@ package com.software.financetracker.data.local.category
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -24,9 +25,15 @@ interface CategoryDao {
     @Insert
     suspend fun insert(entity: CategoryEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<CategoryEntity>)
+
     @Update
     suspend fun update(entity: CategoryEntity)
 
     @Delete
     suspend fun delete(entity: CategoryEntity)
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
 }

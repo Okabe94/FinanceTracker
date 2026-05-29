@@ -25,4 +25,5 @@ sealed interface SettingsAction {
     data object OnHomeSortDropdownToggle : SettingsAction
     data object OnHomeSortDropdownDismiss : SettingsAction
     data class OnHomeSortDirectionChange(val direction: SortDirection) : SettingsAction
+    data object OnNavigateToBackup : SettingsAction
 }

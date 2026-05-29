@@ -62,3 +62,6 @@ data class GoalFormRoute(val goalId: Long? = null)
 
 @Serializable
 object SettingsRoute
+
+@Serializable
+object BackupRestoreRoute

@@ -3,6 +3,7 @@ package com.software.financetracker.data.local.expense
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -83,12 +84,21 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE id = :id")
     suspend fun getById(id: Long): ExpenseEntity?
 
+    @Query("SELECT * FROM expenses")
+    suspend fun getAll(): List<ExpenseEntity>
+
     @Insert
     suspend fun insert(entity: ExpenseEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<ExpenseEntity>)
 
     @Update
     suspend fun update(entity: ExpenseEntity)
 
     @Delete
     suspend fun delete(entity: ExpenseEntity)
+
+    @Query("DELETE FROM expenses")
+    suspend fun deleteAll()
 }

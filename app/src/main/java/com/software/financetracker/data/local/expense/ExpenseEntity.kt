@@ -5,7 +5,9 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.software.financetracker.data.local.category.CategoryEntity
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(
     tableName = "expenses",
     foreignKeys = [
