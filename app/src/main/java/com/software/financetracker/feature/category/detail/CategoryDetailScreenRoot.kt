@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.software.financetracker.core.presentation.ObserveAsEvents
+import com.software.financetracker.navigation.BatchExpenseRoute
 import com.software.financetracker.navigation.CategoryFormRoute
 import com.software.financetracker.navigation.ExpenseFormRoute
 import org.koin.compose.viewmodel.koinViewModel
@@ -26,6 +27,8 @@ fun CategoryDetailScreenRoot(navController: NavController) {
                         recurringExpenseId = event.recurringExpenseId
                     )
                 )
+            is CategoryDetailEvent.NavigateToBatchExpense ->
+                navController.navigate(BatchExpenseRoute(categoryId = event.categoryId))
         }
     }
 

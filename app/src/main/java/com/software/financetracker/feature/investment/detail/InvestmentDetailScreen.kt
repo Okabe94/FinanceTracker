@@ -126,6 +126,13 @@ fun InvestmentDetailScreen(
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(
+                                text = { Text("Agregar múltiples entradas") },
+                                onClick = {
+                                    showMenu = false
+                                    onAction(InvestmentDetailAction.OnBatchAddEntryClick)
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.investment_detail_save_csv)) },
                                 onClick = {
                                     showMenu = false

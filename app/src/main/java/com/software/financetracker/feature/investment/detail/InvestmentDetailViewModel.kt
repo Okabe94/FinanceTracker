@@ -87,6 +87,11 @@ class InvestmentDetailViewModel(
                 viewModelScope.launch {
                     _events.send(InvestmentDetailEvent.NavigateToAddEntry(route.investmentId))
                 }
+            InvestmentDetailAction.OnBatchAddEntryClick ->
+                viewModelScope.launch {
+                    val currency = state.value.currency
+                    _events.send(InvestmentDetailEvent.NavigateToBatchAddEntry(route.investmentId, currency))
+                }
             is InvestmentDetailAction.OnEntryClick ->
                 viewModelScope.launch {
                     _events.send(

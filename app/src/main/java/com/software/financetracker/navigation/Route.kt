@@ -37,6 +37,15 @@ data class InvestmentEntryFormRoute(
 )
 
 @Serializable
+data class BatchExpenseRoute(val categoryId: Long? = null)
+
+@Serializable
+data class BatchInvestmentEntryRoute(
+    val investmentId: Long,
+    val investmentCurrency: String
+)
+
+@Serializable
 data class AssistantExpenseRoute(
     val categoryName: String = "",
     val amountCop: Long = 0L

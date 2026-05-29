@@ -94,6 +94,10 @@ class CategoryDetailViewModel(
                 viewModelScope.launch {
                     _events.send(CategoryDetailEvent.NavigateToExpenseForm(categoryId))
                 }
+            CategoryDetailAction.OnBatchAddExpenseClick ->
+                viewModelScope.launch {
+                    _events.send(CategoryDetailEvent.NavigateToBatchExpense(categoryId))
+                }
             is CategoryDetailAction.OnExpenseClick ->
                 viewModelScope.launch {
                     _events.send(

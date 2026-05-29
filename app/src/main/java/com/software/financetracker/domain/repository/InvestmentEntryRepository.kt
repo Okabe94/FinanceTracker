@@ -11,5 +11,6 @@ interface InvestmentEntryRepository {
     suspend fun getAllByInvestmentAsc(investmentId: Long): List<InvestmentEntryEntity>
     suspend fun getById(id: Long): Result<InvestmentEntryEntity, DataError.Local>
     suspend fun upsert(entity: InvestmentEntryEntity): Result<Long, DataError.Local>
+    suspend fun insertAll(entities: List<InvestmentEntryEntity>): EmptyResult<DataError.Local>
     suspend fun delete(entity: InvestmentEntryEntity): EmptyResult<DataError.Local>
 }

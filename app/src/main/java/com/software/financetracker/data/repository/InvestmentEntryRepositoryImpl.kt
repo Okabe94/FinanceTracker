@@ -34,6 +34,14 @@ class InvestmentEntryRepositoryImpl(
             Result.Error(DataError.Local.UNKNOWN)
         }
 
+    override suspend fun insertAll(entities: List<InvestmentEntryEntity>): EmptyResult<DataError.Local> =
+        try {
+            dao.insertAll(entities)
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
+        }
+
     override suspend fun delete(entity: InvestmentEntryEntity): EmptyResult<DataError.Local> =
         try {
             dao.delete(entity)

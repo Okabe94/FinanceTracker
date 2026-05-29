@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.software.financetracker.core.export.ExportShareHelper
 import com.software.financetracker.core.presentation.ObserveAsEvents
+import com.software.financetracker.navigation.BatchInvestmentEntryRoute
 import com.software.financetracker.navigation.InvestmentEntryFormRoute
 import com.software.financetracker.navigation.InvestmentFormRoute
 import kotlinx.coroutines.launch
@@ -30,6 +31,8 @@ fun InvestmentDetailScreenRoot(navController: NavController) {
                 navController.navigate(InvestmentFormRoute(investmentId = event.investmentId))
             is InvestmentDetailEvent.NavigateToAddEntry ->
                 navController.navigate(InvestmentEntryFormRoute(investmentId = event.investmentId))
+            is InvestmentDetailEvent.NavigateToBatchAddEntry ->
+                navController.navigate(BatchInvestmentEntryRoute(event.investmentId, event.currency))
             is InvestmentDetailEvent.NavigateToEditEntry ->
                 navController.navigate(
                     InvestmentEntryFormRoute(

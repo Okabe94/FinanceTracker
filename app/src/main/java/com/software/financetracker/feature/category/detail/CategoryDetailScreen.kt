@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
@@ -71,6 +72,12 @@ fun CategoryDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onAction(CategoryDetailAction.OnBatchAddExpenseClick) }) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.PlaylistAdd,
+                            contentDescription = "Agregar múltiples gastos"
+                        )
+                    }
                     IconButton(onClick = { onAction(CategoryDetailAction.OnEditCategoryClick) }) {
                         Icon(
                             Icons.Rounded.Edit,

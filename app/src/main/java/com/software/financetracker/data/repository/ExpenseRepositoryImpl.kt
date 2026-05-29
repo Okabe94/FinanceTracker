@@ -72,6 +72,15 @@ class ExpenseRepositoryImpl(
             Result.Error(DataError.Local.UNKNOWN)
         }
 
+    override suspend fun insertAll(entities: List<ExpenseEntity>): EmptyResult<DataError.Local> =
+        try {
+            dao.insertAll(entities)
+            enqueueWidgetRefresh()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
+        }
+
     override suspend fun delete(entity: ExpenseEntity): EmptyResult<DataError.Local> =
         try {
             dao.delete(entity)

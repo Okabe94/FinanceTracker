@@ -21,5 +21,6 @@ interface ExpenseRepository {
     suspend fun getAllInRange(startDate: String, endDate: String): Result<List<TopExpenseRow>, DataError.Local>
     suspend fun getById(id: Long): Result<ExpenseEntity, DataError.Local>
     suspend fun upsert(entity: ExpenseEntity): Result<Long, DataError.Local>
+    suspend fun insertAll(entities: List<ExpenseEntity>): EmptyResult<DataError.Local>
     suspend fun delete(entity: ExpenseEntity): EmptyResult<DataError.Local>
 }

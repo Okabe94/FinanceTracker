@@ -8,4 +8,5 @@ sealed interface CategoryDetailEvent {
         val expenseId: Long? = null,
         val recurringExpenseId: Long? = null
     ) : CategoryDetailEvent
+    data class NavigateToBatchExpense(val categoryId: Long) : CategoryDetailEvent
 }
